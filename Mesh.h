@@ -8,8 +8,8 @@
 class Mesh
 {
 public:
-	Mesh(Vertex vertices[], int vertexCount, 
-		unsigned int indices[], int indexCount,
+	Mesh(Vertex* vertices, int vertexCount, 
+		unsigned int* indices, int indexCount,
 		Microsoft::WRL::ComPtr<ID3D11Device> device);
 
 	Microsoft::WRL::ComPtr<ID3D11Buffer> GetVertexBuffer();

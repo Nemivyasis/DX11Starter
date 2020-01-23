@@ -30,6 +30,8 @@ private:
 	void CreateBasicGeometry();
 	std::unique_ptr<Mesh> MakeSquare(float centerX, float centerY, float sideSize);
 
+	std::unique_ptr<Mesh> MakePolygon(int numSides, float centerX, float centerY, float radius);
+
 	
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the

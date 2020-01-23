@@ -176,6 +176,7 @@ void Game::CreateBasicGeometry()
 
 	meshes.push_back(std::make_unique<Mesh>(vertices, 3, indices, 3, device));
 	meshes.push_back(MakeSquare(0.75f, 0.75f, 0.25f));
+	meshes.push_back(MakePolygon(360, -0.75f, -0.75f, 0.2f));
 }
 
 
@@ -287,4 +288,42 @@ std::unique_ptr<Mesh> Game::MakeSquare(float centerX, float centerY, float sideS
 	unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
 
 	return std::make_unique<Mesh>(vertices, 4, indices, 6, device);
+}
+
+std::unique_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float centerY, float radius) 
+{
+	if (numSides < 3)
+		return NULL;
+
+	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+
+	Vertex* vertices = new Vertex[(unsigned long long) numSides + 1];
+	unsigned int* indices = new unsigned int[(unsigned long long) numSides * 3];
+	double angle = (2 * 3.141592f) / numSides;
+
+	//make the first two vertices
+	vertices[0] = { XMFLOAT3(centerX, centerY, 0.0f), red };
+	vertices[1] = { XMFLOAT3(centerX + radius, centerY, 0.0f), red };
+
+	for (int i = 0; i < (unsigned long long) numSides - 1; i++)
+	{
+		float xOffset = radius * (float) cos(angle * (i + 1.0));
+		float yOffset = radius * (float) sin(angle * (i + 1.0));
+		vertices[i + 2] = { XMFLOAT3(centerX + xOffset, centerY + yOffset, 0.0f), red };
+
+		indices[3 * i] = 0;
+		indices[3 * i + 1] = i + 2;
+		indices[3 * i + 2] = i + 1;
+	}
+
+	//make the final side indices
+	int i = numSides - 1;
+	indices[3 * i] = 0;
+	indices[3 * i + 1] = 1;
+	indices[3 * i + 2] = i + 1;
+
+	auto mesh = std::make_unique<Mesh>(vertices, numSides + 1, indices, numSides * 3, device);
+	delete[] vertices;
+	delete[] indices;
+	return mesh;
 }
