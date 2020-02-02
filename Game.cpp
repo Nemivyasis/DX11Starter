@@ -58,6 +58,18 @@ void Game::Init()
 	LoadShaders();
 	CreateBasicGeometry();
 
+	// Get size as the next multiple of 16 
+	unsigned int size = sizeof(VertexShaderExternalData); 
+	size = (size + 15) / 16 * 16;
+
+	D3D11_BUFFER_DESC cbDesc = {}; // Sets struct to all zeros 
+	cbDesc.BindFlags =  D3D11_BIND_CONSTANT_BUFFER; 
+	cbDesc.ByteWidth = size; // Must be a multiple of 16
+	cbDesc.CPUAccessFlags =  D3D11_CPU_ACCESS_WRITE; 
+	cbDesc.Usage =  D3D11_USAGE_DYNAMIC;
+
+	device->CreateBuffer(&cbDesc, 0, constantBufferVS.GetAddressOf());
+
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -234,6 +246,21 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - However, this isn't always the case (but might be for this course)
 	context->IASetInputLayout(inputLayout.Get());
 
+	//Set the constant Buffer
+	VertexShaderExternalData vsData; 
+	vsData.colorTint = XMFLOAT4(1.0f, 0.25f, 0.25f, 1.0f); 
+	vsData.offset = XMFLOAT3(0.25f, -0.25f, 0.0f);
+
+	//Copy buffer over
+	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};      
+	context->Map(constantBufferVS.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);      
+	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));      
+	context->Unmap(constantBufferVS.Get(), 0);
+
+	context->VSSetConstantBuffers(
+		0,  // Which slot (register) to bind the buffer to?
+		1,  // How many are we activating?  Can do multiple at once 
+		constantBufferVS.GetAddressOf());  // Array of buffers (or the address of one)
 
 	for (size_t i = 0; i < meshes.size(); i++)
 	{
