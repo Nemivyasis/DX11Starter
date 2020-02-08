@@ -1,7 +1,7 @@
 cbuffer ExternalData : register(b0) 
 { 
 	float4 colorTint; 
-	float3 offset; 
+	float4x4 worldMatrix; 
 
 }
 // Struct representing a single vertex worth of data
@@ -56,7 +56,7 @@ VertexToPixel main( VertexShaderInput input )
 	// - Each of these components is then automatically divided by the W component, 
 	//   which we're leaving at 1.0 for now (this is more useful when dealing with 
 	//   a perspective projection matrix, which we'll get to in future assignments).
-	output.position = float4(input.position + offset, 1.0f);
+	output.position = mul(worldMatrix, float4(input.position, 1.0f));
 
 	// Pass the color through 
 	// - The values will be interpolated per-pixel by the rasterizer

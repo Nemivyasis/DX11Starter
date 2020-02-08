@@ -186,9 +186,16 @@ void Game::CreateBasicGeometry()
 	// - But just to see how it's done...
 	unsigned int indices[] = { 0, 1, 2 };
 
-	meshes.push_back(std::make_unique<Mesh>(vertices, 3, indices, 3, device));
-	meshes.push_back(MakeSquare(0.75f, 0.75f, 0.25f));
-	meshes.push_back(MakePolygon(360, -0.75f, -0.75f, 0.2f));
+	entities = std::vector<Entity>();
+	entities.push_back(Entity(std::make_shared<Mesh>(vertices, 3, indices, 3, device)));
+	auto squareMesh = MakeSquare(0, 0, 0.25f);
+	entities.push_back(Entity(squareMesh));
+	entities.back().GetTransform()->SetPosition(0.75f, 0.75f, 0);
+	entities.push_back(Entity(squareMesh));
+	entities.back().GetTransform()->SetPosition(-0.75f, 0, 0);
+	entities.push_back(Entity(squareMesh));
+	entities.back().GetTransform()->SetPosition(0, -.75f, 0);
+	entities.push_back(Entity(MakePolygon(360, -0.75f, -0.75f, 0.2f)));
 }
 
 
@@ -210,6 +217,10 @@ void Game::Update(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+
+	entities[0].GetTransform()->Rotate(0, 0, XM_PIDIV4 * deltaTime);
+	entities[2].GetTransform()->Scale(1 - (0.1 * deltaTime), 1, 1);
+	entities.back().GetTransform()->MoveAbsolute(0, .1 * deltaTime, 0);
 }
 
 // --------------------------------------------------------
@@ -246,45 +257,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	// - However, this isn't always the case (but might be for this course)
 	context->IASetInputLayout(inputLayout.Get());
 
-	//Set the constant Buffer
-	VertexShaderExternalData vsData; 
-	vsData.colorTint = XMFLOAT4(1.0f, 0.25f, 0.25f, 1.0f); 
-	vsData.offset = XMFLOAT3(0.25f, -0.25f, 0.0f);
-
-	//Copy buffer over
-	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};      
-	context->Map(constantBufferVS.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedBuffer);      
-	memcpy(mappedBuffer.pData, &vsData, sizeof(vsData));      
-	context->Unmap(constantBufferVS.Get(), 0);
-
-	context->VSSetConstantBuffers(
-		0,  // Which slot (register) to bind the buffer to?
-		1,  // How many are we activating?  Can do multiple at once 
-		constantBufferVS.GetAddressOf());  // Array of buffers (or the address of one)
-
-	for (size_t i = 0; i < meshes.size(); i++)
+	//Draw the entities
+	for (size_t i = 0; i < entities.size(); i++)
 	{
-		// Set buffers in the input assembler
-		//  - Do this ONCE PER OBJECT you're drawing, since each object might
-		//    have different geometry.
-		//  - for this demo, this step *could* simply be done once during Init(),
-		//    but I'm doing it here because it's often done multiple times per frame
-		//    in a larger application/game
-		UINT stride = sizeof(Vertex);
-		UINT offset = 0;
-		context->IASetVertexBuffers(0, 1, meshes[i]->GetVertexBuffer().GetAddressOf(), &stride, &offset);
-		context->IASetIndexBuffer(meshes[i]->GetIndexBuffer().Get(), DXGI_FORMAT_R32_UINT, 0);
-
-
-		// Finally do the actual drawing
-		//  - Do this ONCE PER OBJECT you intend to draw
-		//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-		//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-		//     vertices in the currently set VERTEX BUFFER
-		context->DrawIndexed(
-			meshes[i]->GetIndexCount(),     // The number of indices to use (we could draw a subset if we wanted)
-			0,     // Offset to the first index we want to use
-			0);    // Offset to add to each index when looking up vertices
+		entities[i].DrawObject(constantBufferVS.Get(), context.Get());
 	}
 
 	// Present the back buffer to the user
@@ -300,7 +276,7 @@ void Game::Draw(float deltaTime, float totalTime)
 //--------------------------------------------
 // Makes a square
 //--------------------------------------------
-std::unique_ptr<Mesh> Game::MakeSquare(float centerX, float centerY, float sideSize)
+std::shared_ptr<Mesh> Game::MakeSquare(float centerX, float centerY, float sideSize)
 {
 	XMFLOAT4 color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
 
@@ -314,10 +290,10 @@ std::unique_ptr<Mesh> Game::MakeSquare(float centerX, float centerY, float sideS
 
 	unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
 
-	return std::make_unique<Mesh>(vertices, 4, indices, 6, device);
+	return std::make_shared<Mesh>(vertices, 4, indices, 6, device);
 }
 
-std::unique_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float centerY, float radius) 
+std::shared_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float centerY, float radius) 
 {
 	if (numSides < 3)
 		return NULL;
@@ -349,7 +325,7 @@ std::unique_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float cente
 	indices[3 * i + 1] = 1;
 	indices[3 * i + 2] = i + 1;
 
-	auto mesh = std::make_unique<Mesh>(vertices, numSides + 1, indices, numSides * 3, device);
+	auto mesh = std::make_shared<Mesh>(vertices, numSides + 1, indices, numSides * 3, device);
 	delete[] vertices;
 	delete[] indices;
 	return mesh;
