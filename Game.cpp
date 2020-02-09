@@ -194,7 +194,7 @@ void Game::CreateBasicGeometry()
 	entities.push_back(Entity(squareMesh));
 	entities.back().GetTransform()->SetPosition(-0.75f, 0, 0);
 	entities.push_back(Entity(squareMesh));
-	entities.back().GetTransform()->SetPosition(0, -.75f, 0);
+	entities.back().GetTransform()->SetPosition(0.75f, -.75f, 0);
 	entities.push_back(Entity(MakePolygon(360, -0.75f, -0.75f, 0.2f)));
 }
 
@@ -219,7 +219,9 @@ void Game::Update(float deltaTime, float totalTime)
 		Quit();
 
 	entities[0].GetTransform()->Rotate(0, 0, XM_PIDIV4 * deltaTime);
+	entities[1].GetTransform()->Rotate(0, 0, -XM_PIDIV4 * deltaTime);
 	entities[2].GetTransform()->Scale(1 - (0.1 * deltaTime), 1, 1);
+	entities[3].GetTransform()->MoveAbsolute(-.1 * deltaTime, 0, 0);
 	entities.back().GetTransform()->MoveAbsolute(0, .1 * deltaTime, 0);
 }
 
