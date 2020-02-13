@@ -8,9 +8,9 @@ public:
 	void SetRotation(float pitch, float yaw, float roll);
 	void SetScale(float x, float y, float z);
 
-	DirectX::XMFLOAT3 GetPosition();
-	DirectX::XMFLOAT3 GetRotation();
-	DirectX::XMFLOAT3 GetScale();
+	DirectX::XMFLOAT3 GetPosition() const;
+	DirectX::XMFLOAT3 GetRotation() const;
+	DirectX::XMFLOAT3 GetScale() const;
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
 
 	void MoveAbsolute(float x, float y, float z);

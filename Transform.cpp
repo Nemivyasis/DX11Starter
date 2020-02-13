@@ -27,17 +27,17 @@ void Transform::SetScale(float x, float y, float z)
 	worldDirty = true;
 }
 
-XMFLOAT3 Transform::GetPosition()
+XMFLOAT3 Transform::GetPosition() const
 {
 	return position;
 }
 
-XMFLOAT3 Transform::GetRotation()
+XMFLOAT3 Transform::GetRotation() const
 {
 	return rotation;
 }
 
-XMFLOAT3 Transform::GetScale()
+XMFLOAT3 Transform::GetScale() const
 {
 	return scale;
 }

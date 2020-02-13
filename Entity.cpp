@@ -6,12 +6,12 @@ Entity::Entity(std::shared_ptr<Mesh> meshptr)
 	transform = std::make_unique<Transform>();
 }
 
-std::shared_ptr<Mesh> Entity::GetMesh()
+std::shared_ptr<Mesh> Entity::GetMesh() const
 {
 	return mesh;
 }
 
-Transform* Entity::GetTransform()
+Transform* Entity::GetTransform() const
 {
 	return transform.get();
 }
