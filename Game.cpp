@@ -1,6 +1,6 @@
 #include "Game.h"
 #include "Vertex.h"
-
+#include <iostream>
 // Needed for a helper function to read compiled shader files from the hard drive
 #pragma comment(lib, "d3dcompiler.lib")
 #include <d3dcompiler.h>
@@ -74,6 +74,8 @@ void Game::Init()
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	camera = std::make_unique<Camera>((float)this->width / this->height);
 }
 
 // --------------------------------------------------------
@@ -186,16 +188,22 @@ void Game::CreateBasicGeometry()
 	// - But just to see how it's done...
 	unsigned int indices[] = { 0, 1, 2 };
 
+	//Make Materials
+	auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0, 0, 1.0f), vertexShader, pixelShader);
+	auto greenMaterial = std::make_shared<Material>(XMFLOAT4(0, 1, 0, 1.0f), vertexShader, pixelShader);
+	auto blueMaterial = std::make_shared<Material>(XMFLOAT4(0, 0, 1, 1.0f), vertexShader, pixelShader);
+
+	//Make Entities
 	entities = std::vector<Entity>();
-	entities.push_back(Entity(std::make_shared<Mesh>(vertices, 3, indices, 3, device)));
+	entities.push_back(Entity(std::make_shared<Mesh>(vertices, 3, indices, 3, device), redMaterial));
 	auto squareMesh = MakeSquare(0, 0, 0.25f);
-	entities.push_back(Entity(squareMesh));
+	entities.push_back(Entity(squareMesh, greenMaterial));
 	entities.back().GetTransform()->SetPosition(0.75f, 0.75f, 0);
-	entities.push_back(Entity(squareMesh));
+	entities.push_back(Entity(squareMesh, redMaterial));
 	entities.back().GetTransform()->SetPosition(-0.75f, 0, 0);
-	entities.push_back(Entity(squareMesh));
+	entities.push_back(Entity(squareMesh, blueMaterial));
 	entities.back().GetTransform()->SetPosition(0.75f, -.75f, 0);
-	entities.push_back(Entity(MakePolygon(360, -0.75f, -0.75f, 0.2f)));
+	entities.push_back(Entity(MakePolygon(360, -0.75f, -0.75f, 0.2f), greenMaterial));
 }
 
 
@@ -207,6 +215,10 @@ void Game::OnResize()
 {
 	// Handle base-level DX resize stuff
 	DXCore::OnResize();
+
+	if (camera != nullptr) {
+		camera->UpdateProjectionMatrix((float) this->width / this->height);
+	}
 }
 
 // --------------------------------------------------------
@@ -220,9 +232,11 @@ void Game::Update(float deltaTime, float totalTime)
 
 	entities[0].GetTransform()->Rotate(0, 0, XM_PIDIV4 * deltaTime);
 	entities[1].GetTransform()->Rotate(0, 0, -XM_PIDIV4 * deltaTime);
-	entities[2].GetTransform()->Scale(1 - (0.1 * deltaTime), 1, 1);
-	entities[3].GetTransform()->MoveAbsolute(-.1 * deltaTime, 0, 0);
-	entities.back().GetTransform()->MoveAbsolute(0, .1 * deltaTime, 0);
+	entities[2].GetTransform()->Scale(1 - (0.1f * deltaTime), 1, 1);
+	entities[3].GetTransform()->MoveAbsolute(-.1f * deltaTime, 0, 0);
+	entities.back().GetTransform()->MoveAbsolute(0, .1f * deltaTime, 0);
+
+	camera->Update(deltaTime, this->hWnd);
 }
 
 // --------------------------------------------------------
@@ -244,14 +258,6 @@ void Game::Draw(float deltaTime, float totalTime)
 		0);
 
 
-	// Set the vertex and pixel shaders to use for the next Draw() command
-	//  - These don't technically need to be set every frame
-	//  - Once you start applying different shaders to different objects,
-	//    you'll need to swap the current shaders before each draw
-	context->VSSetShader(vertexShader.Get(), 0, 0);
-	context->PSSetShader(pixelShader.Get(), 0, 0);
-
-
 	// Ensure the pipeline knows how to interpret the data (numbers)
 	// from the vertex buffer.  
 	// - If all of your 3D models use the exact same vertex layout,
@@ -262,7 +268,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//Draw the entities
 	for (size_t i = 0; i < entities.size(); i++)
 	{
-		entities[i].DrawObject(constantBufferVS.Get(), context.Get());
+		entities[i].DrawObject(constantBufferVS.Get(), context.Get(), camera.get());
 	}
 
 	// Present the back buffer to the user
@@ -280,7 +286,7 @@ void Game::Draw(float deltaTime, float totalTime)
 //--------------------------------------------
 std::shared_ptr<Mesh> Game::MakeSquare(float centerX, float centerY, float sideSize)
 {
-	XMFLOAT4 color = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	XMFLOAT4 color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	Vertex vertices[] =
 	{
@@ -300,7 +306,7 @@ std::shared_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float cente
 	if (numSides < 3)
 		return NULL;
 
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	XMFLOAT4 red = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 
 	Vertex* vertices = new Vertex[(unsigned long long) numSides + 1];
 	unsigned int* indices = new unsigned int[(unsigned long long) numSides * 3];

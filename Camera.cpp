@@ -1,6 +1,14 @@
 #include "Camera.h"
 using namespace DirectX;
 
+Camera::Camera(float aspectRatio)
+{
+	SetAllCustomOptions(XM_PIDIV4, .01f, 500, 1, 3, .1f);
+	CreateTransform(XMFLOAT3(0, 0, -10), XMFLOAT3(0, 0, 0));
+	UpdateProjectionMatrix(aspectRatio);
+	UpdateViewMatrix();
+}
+
 Camera::Camera(DirectX::XMFLOAT3 pos, DirectX::XMFLOAT3 orientation, float aspectRatio,
 	float fieldView, float nearClip, float farClip, 
 	float moveSpd, float fastMoveSpd, float mouseLookSpd)
@@ -36,8 +44,9 @@ void Camera::UpdateProjectionMatrix(float aspectRatio)
 void Camera::UpdateViewMatrix()
 {
 	auto pos = XMLoadFloat3(&transform->GetPosition());
-	auto rot = XMLoadFloat3(&transform->GetRotation());
-	auto viewMat = XMMatrixLookToLH(pos, rot, XMVectorSet(0, 1, 0, 0));
+	auto rot = XMQuaternionRotationRollPitchYaw(transform->GetRotation().x, transform->GetRotation().y, transform->GetRotation().z);
+	auto viewMat = XMMatrixLookToLH(pos, XMVector3Rotate(XMVectorSet(0, 0, 1, 0), rot), XMVectorSet(0, 1, 0, 0));
+	XMStoreFloat4x4(&viewMatrix, viewMat);
 }
 
 void Camera::Update(float dt, HWND windowHandle)
@@ -70,9 +79,10 @@ void Camera::Update(float dt, HWND windowHandle)
 		POINT moveDist = {};
 		moveDist.x = mousePos.x - prevMousePosition.x;
 		moveDist.y = mousePos.y - prevMousePosition.y;
-		moveDist.x = moveDist.x * mouseLookSpeed * dt;
-		moveDist.y = moveDist.y * mouseLookSpeed * dt;
-		transform->Rotate(moveDist.y, moveDist.x, 0);
+		
+		float xRot = (moveDist.x * mouseLookSpeed * dt);
+		float yRot = (moveDist.y * mouseLookSpeed * dt);
+		transform->Rotate(yRot, xRot, 0);
 	}
 
 	prevMousePosition = mousePos;

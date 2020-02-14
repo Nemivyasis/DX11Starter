@@ -5,8 +5,10 @@
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 #include <memory>
 #include <vector>
+#include "Material.h"
 #include "Entity.h"
 #include "BufferStructs.h"
+#include "Camera.h"
 
 class Game 
 	: public DXCore
@@ -46,5 +48,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBufferVS;
+
+	//Camera class
+	std::unique_ptr<Camera> camera;
 };
 

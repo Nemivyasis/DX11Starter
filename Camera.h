@@ -6,6 +6,7 @@
 class Camera
 {
 public:
+	Camera(float aspectRatio);
 	Camera(DirectX::XMFLOAT3 pos, DirectX::XMFLOAT3 orientation, float aspectRatio,
 		float fieldView, float nearClp, float farClp,
 		float moveSpd, float fastMoveSpd, float mouseLookSpd);

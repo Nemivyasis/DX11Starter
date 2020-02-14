@@ -1,9 +1,10 @@
 #include "Entity.h"
-
-Entity::Entity(std::shared_ptr<Mesh> meshptr)
+#include <iostream>
+Entity::Entity(std::shared_ptr<Mesh> meshptr, std::shared_ptr<Material> mat)
 {
 	mesh = meshptr;
 	transform = std::make_unique<Transform>();
+	material = mat;
 }
 
 std::shared_ptr<Mesh> Entity::GetMesh() const
@@ -16,12 +17,26 @@ Transform* Entity::GetTransform() const
 	return transform.get();
 }
 
-void Entity::DrawObject(ID3D11Buffer* constantBufferVS, ID3D11DeviceContext* context)
+std::shared_ptr<Material> Entity::GetMaterial() const
 {
+	return material;
+}
+
+void Entity::DrawObject(ID3D11Buffer* constantBufferVS, ID3D11DeviceContext* context, Camera* camera)
+{
+	// Set the vertex and pixel shaders to use for the next Draw() command
+	//  - These don't technically need to be set every frame
+	//  - Once you start applying different shaders to different objects,
+	//    you'll need to swap the current shaders before each draw
+	context->VSSetShader(material->GetVertexShader().Get(), 0, 0);
+	context->PSSetShader(material->GetPixelShader().Get(), 0, 0);
+
 	//Set the constant buffer
 	VertexShaderExternalData vsData;
-	vsData.colorTint = DirectX::XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	vsData.colorTint = material->GetColorTint();
 	vsData.worldMatrix = transform->GetWorldMatrix();
+	vsData.projectionMatrix = camera->GetProjectionMatrix();
+	vsData.viewMatrix = camera->GetViewMatrix();
 
 	//Copy the buffer over
 	D3D11_MAPPED_SUBRESOURCE mappedBuffer = {};
