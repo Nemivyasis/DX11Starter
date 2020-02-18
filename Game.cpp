@@ -193,6 +193,11 @@ void Game::Draw(float deltaTime, float totalTime)
 		&dir3,
 		sizeof(DirectionalLight));
 
+	pixelShader->SetData(
+		"cameraPosition",
+		&(camera->GetTransform()->GetPosition()),
+		sizeof(XMFLOAT3));
+	
 	pixelShader->CopyAllBufferData();
 	//Draw the entities
 	for (size_t i = 0; i < entities.size(); i++)
