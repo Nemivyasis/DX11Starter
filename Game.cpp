@@ -58,18 +58,6 @@ void Game::Init()
 	LoadShaders();
 	CreateBasicGeometry();
 
-	// Get size as the next multiple of 16 
-	unsigned int size = sizeof(VertexShaderExternalData); 
-	size = (size + 15) / 16 * 16;
-
-	D3D11_BUFFER_DESC cbDesc = {}; // Sets struct to all zeros 
-	cbDesc.BindFlags =  D3D11_BIND_CONSTANT_BUFFER; 
-	cbDesc.ByteWidth = size; // Must be a multiple of 16
-	cbDesc.CPUAccessFlags =  D3D11_CPU_ACCESS_WRITE; 
-	cbDesc.Usage =  D3D11_USAGE_DYNAMIC;
-
-	device->CreateBuffer(&cbDesc, 0, constantBufferVS.GetAddressOf());
-
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -88,65 +76,11 @@ void Game::Init()
 // --------------------------------------------------------
 void Game::LoadShaders()
 {
-	// Blob for reading raw data
-	// - This is a simplified way of handling raw data
-	ID3DBlob* shaderBlob;
+	vertexShader = std::make_shared<SimpleVertexShader>(device.Get(), context.Get(),
+		GetFullPathTo_Wide(L"VertexShader.cso").c_str());
 
-	// Read our compiled vertex shader code into a blob
-	// - Essentially just "open the file and plop its contents here"
-	D3DReadFileToBlob(
-		GetFullPathTo_Wide(L"VertexShader.cso").c_str(), // Using a custom helper for file paths
-		&shaderBlob);
-
-	// Create a vertex shader from the information we
-	// have read into the blob above
-	// - A blob can give a pointer to its contents, and knows its own size
-	device->CreateVertexShader(
-		shaderBlob->GetBufferPointer(), // Get a pointer to the blob's contents
-		shaderBlob->GetBufferSize(),	// How big is that data?
-		0,								// No classes in this shader
-		vertexShader.GetAddressOf());	// The address of the ID3D11VertexShader*
-
-
-	// Create an input layout that describes the vertex format
-	// used by the vertex shader we're using
-	//  - This is used by the pipeline to know how to interpret the raw data
-	//     sitting inside a vertex buffer
-	//  - Doing this NOW because it requires a vertex shader's byte code to verify against!
-	//  - Luckily, we already have that loaded (the blob above)
-	D3D11_INPUT_ELEMENT_DESC inputElements[2] = {};
-
-	// Set up the first element - a position, which is 3 float values
-	inputElements[0].Format = DXGI_FORMAT_R32G32B32_FLOAT;				// Most formats are described as color channels; really it just means "Three 32-bit floats"
-	inputElements[0].SemanticName = "POSITION";							// This is "POSITION" - needs to match the semantics in our vertex shader input!
-	inputElements[0].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// How far into the vertex is this?  Assume it's after the previous element
-
-	// Set up the second element - a color, which is 4 more float values
-	inputElements[1].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;			// 4x 32-bit floats
-	inputElements[1].SemanticName = "COLOR";							// Match our vertex shader input!
-	inputElements[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;	// After the previous element
-
-	// Create the input layout, verifying our description against actual shader code
-	device->CreateInputLayout(
-		inputElements,					// An array of descriptions
-		2,								// How many elements in that array
-		shaderBlob->GetBufferPointer(),	// Pointer to the code of a shader that uses this layout
-		shaderBlob->GetBufferSize(),	// Size of the shader code that uses this layout
-		inputLayout.GetAddressOf());	// Address of the resulting ID3D11InputLayout*
-
-
-
-	// Read and create the pixel shader
-	//  - Reusing the same blob here, since we're done with the vert shader code
-	D3DReadFileToBlob(
-		GetFullPathTo_Wide(L"PixelShader.cso").c_str(), // Using a custom helper for file paths
-		&shaderBlob);
-
-	device->CreatePixelShader(
-		shaderBlob->GetBufferPointer(),
-		shaderBlob->GetBufferSize(),
-		0,
-		pixelShader.GetAddressOf());
+	pixelShader = std::make_shared<SimplePixelShader>(device.Get(), context.Get(),
+		GetFullPathTo_Wide(L"PixelShader.cso").c_str());
 }
 
 
@@ -176,9 +110,9 @@ void Game::CreateBasicGeometry()
 	//    since we're describing the triangle in terms of the window itself
 	Vertex vertices[] =
 	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), red },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
 	};
 
 	// Set up the indices, which tell us which vertices to use and in which order
@@ -257,18 +191,10 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
-
-	// Ensure the pipeline knows how to interpret the data (numbers)
-	// from the vertex buffer.  
-	// - If all of your 3D models use the exact same vertex layout,
-	//    this could simply be done once in Init()
-	// - However, this isn't always the case (but might be for this course)
-	context->IASetInputLayout(inputLayout.Get());
-
 	//Draw the entities
 	for (size_t i = 0; i < entities.size(); i++)
 	{
-		entities[i].DrawObject(constantBufferVS.Get(), context.Get(), camera.get());
+		entities[i].DrawObject(context.Get(), camera.get());
 	}
 
 	// Present the back buffer to the user
@@ -290,10 +216,10 @@ std::shared_ptr<Mesh> Game::MakeSquare(float centerX, float centerY, float sideS
 
 	Vertex vertices[] =
 	{
-		{ XMFLOAT3(centerX + 0.5f * sideSize, centerY + 0.5f * sideSize, +0.0f), color },
-		{ XMFLOAT3(centerX + 0.5f * sideSize, centerY - 0.5f * sideSize, +0.0f), color },
-		{ XMFLOAT3(centerX - 0.5f * sideSize, centerY - 0.5f * sideSize, +0.0f), color },
-		{ XMFLOAT3(centerX - 0.5f * sideSize, centerY + 0.5f * sideSize, +0.0f), color },
+		{ XMFLOAT3(centerX + 0.5f * sideSize, centerY + 0.5f * sideSize, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(centerX + 0.5f * sideSize, centerY - 0.5f * sideSize, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(centerX - 0.5f * sideSize, centerY - 0.5f * sideSize, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
+		{ XMFLOAT3(centerX - 0.5f * sideSize, centerY + 0.5f * sideSize, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
 	};
 
 	unsigned int indices[] = { 0, 1, 2, 0, 2, 3 };
@@ -313,14 +239,14 @@ std::shared_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float cente
 	double angle = (2 * 3.141592f) / numSides;
 
 	//make the first two vertices
-	vertices[0] = { XMFLOAT3(centerX, centerY, 0.0f), red };
-	vertices[1] = { XMFLOAT3(centerX + radius, centerY, 0.0f), red };
+	vertices[0] = { XMFLOAT3(centerX, centerY, 0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) };
+	vertices[1] = { XMFLOAT3(centerX + radius, centerY, 0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) };
 
 	for (int i = 0; i < (unsigned long long) numSides - 1; i++)
 	{
 		float xOffset = radius * (float) cos(angle * (i + 1.0));
 		float yOffset = radius * (float) sin(angle * (i + 1.0));
-		vertices[i + 2] = { XMFLOAT3(centerX + xOffset, centerY + yOffset, 0.0f), red };
+		vertices[i + 2] = { XMFLOAT3(centerX + xOffset, centerY + yOffset, 0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) };
 
 		indices[3 * i] = 0;
 		indices[3 * i + 1] = i + 2;

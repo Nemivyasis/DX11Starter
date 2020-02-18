@@ -7,7 +7,6 @@
 #include <vector>
 #include "Material.h"
 #include "Entity.h"
-#include "BufferStructs.h"
 #include "Camera.h"
 
 class Game 
@@ -34,7 +33,6 @@ private:
 	std::shared_ptr<Mesh> MakeSquare(float centerX, float centerY, float sideSize);
 
 	std::shared_ptr<Mesh> MakePolygon(int numSides, float centerX, float centerY, float radius);
-
 	
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
@@ -44,10 +42,10 @@ private:
 	std::vector<Entity> entities;
 
 	// Shaders and shader-related constructs
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+	std::shared_ptr<SimplePixelShader> pixelShader;
+	std::shared_ptr<SimpleVertexShader> vertexShader;
+
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> constantBufferVS;
 
 	//Camera class
 	std::unique_ptr<Camera> camera;

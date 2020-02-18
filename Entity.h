@@ -2,7 +2,6 @@
 #include<memory>
 #include "Mesh.h"
 #include "Transform.h"
-#include "BufferStructs.h"
 #include "Camera.h"
 #include "Material.h"
 
@@ -14,7 +13,7 @@ public:
 	Transform* GetTransform() const;
 	std::shared_ptr<Material> GetMaterial() const;
 
-	void DrawObject(ID3D11Buffer* constantBufferVS, ID3D11DeviceContext* context, Camera* camera);
+	void DrawObject(ID3D11DeviceContext* context, Camera* camera);
 private:
 	std::shared_ptr<Mesh> mesh;
 	std::unique_ptr<Transform> transform;
