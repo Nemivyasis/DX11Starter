@@ -58,6 +58,17 @@ void Game::Init()
 	LoadShaders();
 	CreateBasicGeometry();
 
+	dir1.ambientColor = XMFLOAT3(0.1f, 0.0f, 0.05f);
+	dir1.diffuseColor = XMFLOAT3(1, 0, 0.5f);
+	dir1.direction = XMFLOAT3(1, 0, 0);
+
+	dir2.ambientColor = XMFLOAT3(0.0f, 0.1f, 0.0f);
+	dir2.diffuseColor = XMFLOAT3(0, 1, 0.0f);
+	dir2.direction = XMFLOAT3(0, -1, 0);
+
+	dir3.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	dir3.diffuseColor = XMFLOAT3(0.9, 0.9, 0.9f);
+	dir3.direction = XMFLOAT3(-1, 0, 0);
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -90,54 +101,27 @@ void Game::LoadShaders()
 // --------------------------------------------------------
 void Game::CreateBasicGeometry()
 {
-	// Create some temporary variables to represent colors
-	// - Not necessary, just makes things more readable
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	// Set up the vertices of the triangle we would like to draw
-	// - We're going to copy this array, exactly as it exists in memory
-	//    over to a DirectX-controlled data structure (the vertex buffer)
-	// - Note: Since we don't have a camera or really any concept of
-	//    a "3d world" yet, we're simply describing positions within the
-	//    bounds of how the rasterizer sees our screen: [-1 to +1] on X and Y
-	// - This means (0,0) is at the very center of the screen.
-	// - These are known as "Normalized Device Coordinates" or "Homogeneous 
-	//    Screen Coords", which are ways to describe a position without
-	//    knowing the exact size (in pixels) of the image/window/etc.  
-	// - Long story short: Resizing the window also resizes the triangle,
-	//    since we're describing the triangle in terms of the window itself
-	Vertex vertices[] =
-	{
-		{ XMFLOAT3(+0.0f, +0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) },
-	};
-
-	// Set up the indices, which tell us which vertices to use and in which order
-	// - This is somewhat redundant for just 3 vertices (it's a simple example)
-	// - Indices are technically not required if the vertices are in the buffer 
-	//    in the correct order and each one will be used exactly once
-	// - But just to see how it's done...
-	unsigned int indices[] = { 0, 1, 2 };
+	auto sphereMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
+	auto cubeMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device);
+	auto helixMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device);
 
 	//Make Materials
-	auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0, 0, 1.0f), vertexShader, pixelShader);
-	auto greenMaterial = std::make_shared<Material>(XMFLOAT4(0, 1, 0, 1.0f), vertexShader, pixelShader);
-	auto blueMaterial = std::make_shared<Material>(XMFLOAT4(0, 0, 1, 1.0f), vertexShader, pixelShader);
+	auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f), vertexShader, pixelShader);
+	auto greenMaterial = std::make_shared<Material>(XMFLOAT4(0.1f, 1, 0.1f, 1.0f), vertexShader, pixelShader);
+	auto blueMaterial = std::make_shared<Material>(XMFLOAT4(0.1f, 0.1f, 1, 1.0f), vertexShader, pixelShader);
 
 	//Make Entities
 	entities = std::vector<Entity>();
-	entities.push_back(Entity(std::make_shared<Mesh>(vertices, 3, indices, 3, device), redMaterial));
+	entities.push_back(Entity(sphereMesh, redMaterial));
 	auto squareMesh = MakeSquare(0, 0, 0.25f);
-	entities.push_back(Entity(squareMesh, greenMaterial));
-	entities.back().GetTransform()->SetPosition(0.75f, 0.75f, 0);
-	entities.push_back(Entity(squareMesh, redMaterial));
-	entities.back().GetTransform()->SetPosition(-0.75f, 0, 0);
-	entities.push_back(Entity(squareMesh, blueMaterial));
-	entities.back().GetTransform()->SetPosition(0.75f, -.75f, 0);
-	entities.push_back(Entity(MakePolygon(360, -0.75f, -0.75f, 0.2f), greenMaterial));
+	entities.push_back(Entity(sphereMesh, greenMaterial));
+	entities.back().GetTransform()->SetPosition(3, 0, 0);
+	entities.push_back(Entity(helixMesh, redMaterial));
+	entities.back().GetTransform()->SetPosition(-3, 0, 0);
+	entities.push_back(Entity(helixMesh, blueMaterial));
+	entities.back().GetTransform()->SetPosition(0, -3, 0);
+	entities.push_back(Entity(cubeMesh, greenMaterial));
+	entities.back().GetTransform()->SetPosition(0, 3, 0);
 }
 
 
@@ -166,7 +150,7 @@ void Game::Update(float deltaTime, float totalTime)
 
 	entities[0].GetTransform()->Rotate(0, 0, XM_PIDIV4 * deltaTime);
 	entities[1].GetTransform()->Rotate(0, 0, -XM_PIDIV4 * deltaTime);
-	entities[2].GetTransform()->Scale(1 - (0.1f * deltaTime), 1, 1);
+	entities[2].GetTransform()->Scale(1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime));
 	entities[3].GetTransform()->MoveAbsolute(-.1f * deltaTime, 0, 0);
 	entities.back().GetTransform()->MoveAbsolute(0, .1f * deltaTime, 0);
 
@@ -191,6 +175,25 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
+	//Set lighting
+	pixelShader->SetData(
+		"light",
+		&dir1,
+		sizeof(DirectionalLight));
+	pixelShader->CopyAllBufferData();
+
+	pixelShader->SetData(
+		"light2",
+		&dir2,
+		sizeof(DirectionalLight));
+	pixelShader->CopyAllBufferData();
+
+	pixelShader->SetData(
+		"light3",
+		&dir3,
+		sizeof(DirectionalLight));
+
+	pixelShader->CopyAllBufferData();
 	//Draw the entities
 	for (size_t i = 0; i < entities.size(); i++)
 	{

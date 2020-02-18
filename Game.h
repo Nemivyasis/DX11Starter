@@ -8,6 +8,7 @@
 #include "Material.h"
 #include "Entity.h"
 #include "Camera.h"
+#include "Lights.h"
 
 class Game 
 	: public DXCore
@@ -46,6 +47,10 @@ private:
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+	DirectionalLight dir1 = {};
+	DirectionalLight dir2 = {};
+	DirectionalLight dir3 = {};
 
 	//Camera class
 	std::unique_ptr<Camera> camera;

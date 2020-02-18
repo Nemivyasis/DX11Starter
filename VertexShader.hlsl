@@ -36,6 +36,7 @@ struct VertexToPixel
 	//  v    v                v
 	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
 	float4 color		: COLOR;        // RGBA color
+	float3 normal		: NORMAL;
 };
 
 // --------------------------------------------------------
@@ -66,6 +67,11 @@ VertexToPixel main( VertexShaderInput input )
 	// - We don't need to alter it here, but we do need to send it to the pixel shader
 	output.color = colorTint;
 
+	//transform normal ignoring translation
+	//TODO Make world the inverse transpose of world (calculate in C++ and pass in as constant buffer)
+	output.normal = mul((float3x3)worldMatrix, input.normal);
+
+	
 	// Whatever we return will make its way through the pipeline to the
 	// next programmable stage we're using (the pixel shader for now)
 	return output;
