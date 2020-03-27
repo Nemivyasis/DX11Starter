@@ -1,8 +1,9 @@
 #include<ShaderEverything.hlsli>
+
 cbuffer ExternalData : register(b0)
-{ 
-	float4 colorTint; 
-	float4x4 worldMatrix; 
+{
+	float4 colorTint;
+	float4x4 worldMatrix;
 	float4x4 projectionMatrix;
 	float4x4 viewMatrix;
 }
@@ -14,10 +15,10 @@ cbuffer ExternalData : register(b0)
 // - Output is a single struct of data to pass down the pipeline
 // - Named "main" because that's the default the shader compiler looks for
 // --------------------------------------------------------
-VertexToPixel main( VertexShaderInput input )
+VertexToPixelNormalMap main(VertexShaderInput input)
 {
 	// Set up output struct
-	VertexToPixel output;
+	VertexToPixelNormalMap output;
 
 	// Here we're essentially passing the input position directly through to the next
 	// stage (rasterizer), though it needs to be a 4-component vector now.  
@@ -40,6 +41,8 @@ VertexToPixel main( VertexShaderInput input )
 	//transform normal ignoring translation
 	//TODO Make world the inverse transpose of world (calculate in C++ and pass in as constant buffer)
 	output.normal = mul((float3x3)worldMatrix, input.normal);
+
+	output.tangent = mul((float3x3)worldMatrix, input.tangent);
 
 	output.uv = input.uv;
 	// Whatever we return will make its way through the pipeline to the

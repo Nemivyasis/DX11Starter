@@ -4,8 +4,11 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <DirectXMath.h>
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 #include "Vertex.h"
+
+using namespace DirectX;
 
 class Mesh
 {
@@ -29,5 +32,6 @@ private:
 	void CreateBuffers(Vertex* vertices, int vertexCount,
 		unsigned int* indices, int indexCount,
 		Microsoft::WRL::ComPtr<ID3D11Device> device);
+	void CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices, int numIndices);
 };
 

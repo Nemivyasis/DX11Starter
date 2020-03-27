@@ -24,21 +24,35 @@ std::shared_ptr<Material> Entity::GetMaterial() const
 
 void Entity::DrawObject(ID3D11DeviceContext* context, Camera* camera)
 {
+	auto ps = material->GetPixelShader();
+	auto vs = material->GetVertexShader();
 	// Set the vertex and pixel shaders to use for the next Draw() command
 	//  - These don't technically need to be set every frame
 	//  - Once you start applying different shaders to different objects,
 	//    you'll need to swap the current shaders before each draw
-	material->GetVertexShader()->SetShader();
-	material->GetPixelShader()->SetShader();
+	vs->SetShader();
+	ps->SetShader();
+
+
 
 	//Set the constant buffer
-	auto vs = material->GetVertexShader();
 	vs->SetFloat4("colorTint", material->GetColorTint());
 	vs->SetMatrix4x4("worldMatrix", transform->GetWorldMatrix());
 	vs->SetMatrix4x4("viewMatrix", camera->GetViewMatrix());
 	vs->SetMatrix4x4("projectionMatrix", camera->GetProjectionMatrix());
-
+	
 	vs->CopyAllBufferData();
+
+	ps->SetFloat("reflectivity", material->GetReflectivity());
+	ps->SetSamplerState("samplerOptions", material->GetSamplerState().Get());
+	ps->SetShaderResourceView("diffuseTexture", material->GetShaderResource().Get());
+	
+	if (material->IsNormalMap()) {
+		ps->SetShaderResourceView("normalMap", material->GetNormalMap().Get());
+		std::cout << "SettingNormalMap" << std::endl;
+	}
+
+	ps->CopyAllBufferData();
 
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;

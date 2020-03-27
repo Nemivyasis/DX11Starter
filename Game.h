@@ -5,6 +5,7 @@
 #include <wrl/client.h> // Used for ComPtr - a smart pointer for COM objects
 #include <memory>
 #include <vector>
+#include "WICTextureLoader.h"
 #include "Material.h"
 #include "Entity.h"
 #include "Camera.h"
@@ -34,6 +35,8 @@ private:
 	std::shared_ptr<Mesh> MakeSquare(float centerX, float centerY, float sideSize);
 
 	std::shared_ptr<Mesh> MakePolygon(int numSides, float centerX, float centerY, float radius);
+
+	void SetGlobalPixelShaderInfo(std::shared_ptr<SimplePixelShader> ps);
 	
 	// Note the usage of ComPtr below
 	//  - This is a smart pointer for objects that abide by the
@@ -45,12 +48,19 @@ private:
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
 	std::shared_ptr<SimpleVertexShader> vertexShader;
+	std::shared_ptr<SimplePixelShader> pixelShaderNormalMap;
+	std::shared_ptr<SimpleVertexShader> vertexShaderNormalMap;
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cloverTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTextureNMap;
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 
 	DirectionalLight dir1 = {};
 	DirectionalLight dir2 = {};
 	DirectionalLight dir3 = {};
+	PointLight point1 = {};
 
 	//Camera class
 	std::unique_ptr<Camera> camera;

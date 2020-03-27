@@ -67,8 +67,13 @@ void Game::Init()
 	dir2.direction = XMFLOAT3(0, -1, 0);
 
 	dir3.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
-	dir3.diffuseColor = XMFLOAT3(0.9, 0.9, 0.9f);
+	dir3.diffuseColor = XMFLOAT3(0.9f, 0.9f, 0.9f);
 	dir3.direction = XMFLOAT3(-1, 0, 0);
+
+	point1.ambientColor = XMFLOAT3(0.1f, 0.1f, 0.1f);
+	point1.diffuseColor = XMFLOAT3(0, 0, 1);
+	point1.position = XMFLOAT3(0.1f, 0, 0);
+
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives (points, lines or triangles) we want to draw.  
 	// Essentially: "What kind of shape should the GPU draw with our data?"
@@ -92,6 +97,12 @@ void Game::LoadShaders()
 
 	pixelShader = std::make_shared<SimplePixelShader>(device.Get(), context.Get(),
 		GetFullPathTo_Wide(L"PixelShader.cso").c_str());
+
+	vertexShaderNormalMap = std::make_shared<SimpleVertexShader>(device.Get(), context.Get(),
+		GetFullPathTo_Wide(L"VertexShaderNormal.cso").c_str());
+
+	pixelShaderNormalMap = std::make_shared<SimplePixelShader>(device.Get(), context.Get(),
+		GetFullPathTo_Wide(L"PixelShaderNormal.cso").c_str());
 }
 
 
@@ -106,21 +117,49 @@ void Game::CreateBasicGeometry()
 	auto helixMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device);
 
 	//Make Materials
-	auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f), vertexShader, pixelShader);
-	auto greenMaterial = std::make_shared<Material>(XMFLOAT4(0.1f, 1, 0.1f, 1.0f), vertexShader, pixelShader);
-	auto blueMaterial = std::make_shared<Material>(XMFLOAT4(0.1f, 0.1f, 1, 1.0f), vertexShader, pixelShader);
+	/*auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f), 64, vertexShader, pixelShader);
+	auto greenMaterial = std::make_shared<Material>(XMFLOAT4(0.1f, 1, 0.1f, 1.0f), 64, vertexShader, pixelShader);
+	auto blueMaterial = std::make_shared<Material>(XMFLOAT4(0.1f, 0.1f, 1, 1.0f), 64, vertexShader, pixelShader);
+
+	auto whiteMaterial = std::make_shared<Material>(XMFLOAT4(1, 1, 1 , 1.0f), 64, vertexShader, pixelShader);*/
+	
+	auto hResult = CreateWICTextureFromFile(device.Get(),
+		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/clover.jpg").c_str(),
+		nullptr, cloverTexture.GetAddressOf());
+
+
+	hResult = CreateWICTextureFromFile(device.Get(),
+		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/rock.png").c_str(),
+		nullptr, rockTexture.GetAddressOf());
+
+	hResult = CreateWICTextureFromFile(device.Get(),
+		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/rock_normals.png").c_str(),
+		nullptr, rockTextureNMap.GetAddressOf());
+
+	D3D11_SAMPLER_DESC sampDescription = {};
+	sampDescription.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescription.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescription.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDescription.Filter = D3D11_FILTER_ANISOTROPIC;
+	sampDescription.MaxAnisotropy = 16;
+	sampDescription.MaxLOD = D3D11_FLOAT32_MAX;
+	device->CreateSamplerState(&sampDescription, samplerState.GetAddressOf());
+
+	auto cloverMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 0, cloverTexture, samplerState, vertexShader, pixelShader);
+	auto rockMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShader, pixelShader);
+	auto rockMatNMap = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShaderNormalMap, pixelShaderNormalMap, rockTextureNMap);
 
 	//Make Entities
 	entities = std::vector<Entity>();
-	entities.push_back(Entity(sphereMesh, redMaterial));
+	entities.push_back(Entity(sphereMesh, rockMatNMap));
 	auto squareMesh = MakeSquare(0, 0, 0.25f);
-	entities.push_back(Entity(sphereMesh, greenMaterial));
+	entities.push_back(Entity(sphereMesh, rockMat));
 	entities.back().GetTransform()->SetPosition(3, 0, 0);
-	entities.push_back(Entity(helixMesh, redMaterial));
+	entities.push_back(Entity(helixMesh, rockMat));
 	entities.back().GetTransform()->SetPosition(-3, 0, 0);
-	entities.push_back(Entity(helixMesh, blueMaterial));
+	entities.push_back(Entity(helixMesh, cloverMat));
 	entities.back().GetTransform()->SetPosition(0, -3, 0);
-	entities.push_back(Entity(cubeMesh, greenMaterial));
+	entities.push_back(Entity(cubeMesh, cloverMat));
 	entities.back().GetTransform()->SetPosition(0, 3, 0);
 }
 
@@ -176,29 +215,9 @@ void Game::Draw(float deltaTime, float totalTime)
 		0);
 
 	//Set lighting
-	pixelShader->SetData(
-		"light",
-		&dir1,
-		sizeof(DirectionalLight));
-	pixelShader->CopyAllBufferData();
+	SetGlobalPixelShaderInfo(pixelShader);
+	SetGlobalPixelShaderInfo(pixelShaderNormalMap);
 
-	pixelShader->SetData(
-		"light2",
-		&dir2,
-		sizeof(DirectionalLight));
-	pixelShader->CopyAllBufferData();
-
-	pixelShader->SetData(
-		"light3",
-		&dir3,
-		sizeof(DirectionalLight));
-
-	pixelShader->SetData(
-		"cameraPosition",
-		&(camera->GetTransform()->GetPosition()),
-		sizeof(XMFLOAT3));
-	
-	pixelShader->CopyAllBufferData();
 	//Draw the entities
 	for (size_t i = 0; i < entities.size(); i++)
 	{
@@ -271,4 +290,34 @@ std::shared_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float cente
 	delete[] vertices;
 	delete[] indices;
 	return mesh;
+}
+
+void Game::SetGlobalPixelShaderInfo(std::shared_ptr<SimplePixelShader> ps) {
+	//Set lighting
+	ps->SetData(
+		"light",
+		&dir1,
+		sizeof(DirectionalLight));
+
+	ps->SetData(
+		"light2",
+		&dir2,
+		sizeof(DirectionalLight));
+
+	ps->SetData(
+		"light3",
+		&dir3,
+		sizeof(DirectionalLight));
+
+	ps->SetData(
+		"light4",
+		&point1,
+		sizeof(PointLight));
+
+	ps->SetData(
+		"cameraPosition",
+		&(camera->GetTransform()->GetPosition()),
+		sizeof(XMFLOAT3));
+
+	ps->CopyAllBufferData();
 }
