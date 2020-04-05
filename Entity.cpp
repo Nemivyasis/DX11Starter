@@ -49,7 +49,6 @@ void Entity::DrawObject(ID3D11DeviceContext* context, Camera* camera)
 	
 	if (material->IsNormalMap()) {
 		ps->SetShaderResourceView("normalMap", material->GetNormalMap().Get());
-		std::cout << "SettingNormalMap" << std::endl;
 	}
 
 	ps->CopyAllBufferData();
