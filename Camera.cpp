@@ -3,7 +3,7 @@ using namespace DirectX;
 
 Camera::Camera(float aspectRatio)
 {
-	SetAllCustomOptions(XM_PIDIV4, .01f, 500, 1, 3, .1f);
+	SetAllCustomOptions(XM_PIDIV4, .01f, 500, 1, 3, .005f);
 	CreateTransform(XMFLOAT3(0, 0, -10), XMFLOAT3(0, 0, 0));
 	UpdateProjectionMatrix(aspectRatio);
 	UpdateViewMatrix();
@@ -80,8 +80,8 @@ void Camera::Update(float dt, HWND windowHandle)
 		moveDist.x = mousePos.x - prevMousePosition.x;
 		moveDist.y = mousePos.y - prevMousePosition.y;
 		
-		float xRot = (moveDist.x * mouseLookSpeed * dt);
-		float yRot = (moveDist.y * mouseLookSpeed * dt);
+		float xRot = (moveDist.x * mouseLookSpeed);
+		float yRot = (moveDist.y * mouseLookSpeed);
 		transform->Rotate(yRot, xRot, 0);
 	}
 
