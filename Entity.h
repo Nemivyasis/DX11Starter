@@ -1,10 +1,10 @@
 #pragma once
 #include<memory>
+#include <DirectXMath.h>
 #include "Mesh.h"
 #include "Transform.h"
 #include "Camera.h"
 #include "Material.h"
-
 class Entity
 {
 public:
@@ -13,6 +13,7 @@ public:
 	Transform* GetTransform() const;
 	std::shared_ptr<Material> GetMaterial() const;
 
+	bool IsCollidingWith(Entity& other);
 	void DrawObject(ID3D11DeviceContext* context, Camera* camera);
 private:
 	std::shared_ptr<Mesh> mesh;

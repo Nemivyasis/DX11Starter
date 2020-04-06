@@ -22,6 +22,33 @@ std::shared_ptr<Material> Entity::GetMaterial() const
 	return material;
 }
 
+bool Entity::IsCollidingWith(Entity& other)
+{
+	Collider* thisColl = mesh->GetCollider();
+	Collider* otherColl = mesh->GetCollider();
+
+	XMFLOAT3 maxColl;
+	XMStoreFloat3(&maxColl, XMVector3Transform(XMLoadFloat3(&thisColl->GetMax()), XMLoadFloat4x4(&transform->GetRotlessWorldMatrix())));
+	XMFLOAT3 minColl;
+	XMStoreFloat3(&minColl, XMVector3Transform(XMLoadFloat3(&thisColl->GetMin()), XMLoadFloat4x4(&transform->GetRotlessWorldMatrix())));
+
+	XMFLOAT3 otherMaxColl;
+	XMStoreFloat3(&otherMaxColl, XMVector3Transform(XMLoadFloat3(&otherColl->GetMax()), XMLoadFloat4x4(&other.transform->GetWorldMatrix())));
+	XMFLOAT3 otherMinColl;
+	XMStoreFloat3(&otherMinColl, XMVector3Transform(XMLoadFloat3(&otherColl->GetMin()), XMLoadFloat4x4(&other.transform->GetWorldMatrix())));
+
+	if (!(maxColl.x >= otherMinColl.x && otherMaxColl.x >= minColl.x))
+		return false;
+
+	if (!(maxColl.y >= otherMinColl.y && otherMaxColl.y >= minColl.y))
+		return false;
+
+	if (!(maxColl.z >= otherMinColl.z && otherMaxColl.z >= minColl.z))
+		return false;
+
+	return true;
+}
+
 void Entity::DrawObject(ID3D11DeviceContext* context, Camera* camera)
 {
 	auto ps = material->GetPixelShader();

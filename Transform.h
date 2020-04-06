@@ -12,6 +12,7 @@ public:
 	DirectX::XMFLOAT3 GetRotation() const;
 	DirectX::XMFLOAT3 GetScale() const;
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
+	DirectX::XMFLOAT4X4 GetRotlessWorldMatrix();
 
 	void MoveAbsolute(float x, float y, float z);
 	void MoveRelative(float x, float y, float z);
@@ -20,6 +21,7 @@ public:
 private:
 	bool worldDirty = false;
 	DirectX::XMFLOAT4X4 worldMatrix;
+	DirectX::XMFLOAT4X4 rotlessWorldMat;
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;

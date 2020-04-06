@@ -191,6 +191,11 @@ Microsoft::WRL::ComPtr<ID3D11Buffer> Mesh::GetIndexBuffer()
 	return indexBuffer;
 }
 
+Collider* Mesh::GetCollider()
+{
+	return collider.get();
+}
+
 int Mesh::GetIndexCount()
 {
 	return indCount;
@@ -199,6 +204,8 @@ int Mesh::GetIndexCount()
 void Mesh::CreateBuffers(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount, Microsoft::WRL::ComPtr<ID3D11Device> device)
 {
 	CalculateTangents(vertices, vertexCount, indices, indexCount);
+	CalculateCollider(vertices, vertexCount);
+
 	// Create the VERTEX BUFFER description -----------------------------------
 // - The description is created on the stack because we only need
 //    it to create the buffer.  The description is then useless.
@@ -314,4 +321,34 @@ void Mesh::CalculateTangents(Vertex* verts, int numVerts, unsigned int* indices,
 		// Store the tangent
 		XMStoreFloat3(&verts[i].Tangent, tangent);
 	}
+}
+
+void Mesh::CalculateCollider(Vertex* verts, int numVerts)
+{
+	float minX = verts[0].Position.x;
+	float maxX = verts[0].Position.x;
+	float minY = verts[0].Position.y;
+	float maxY = verts[0].Position.y;
+	float minZ = verts[0].Position.y;
+	float maxZ = verts[0].Position.y;
+
+	for (int i = 1; i < numVerts; i++)
+	{
+		if (verts[i].Position.x < minX)
+			minX = verts[i].Position.x;
+		if (verts[i].Position.x > maxX)
+			maxX = verts[i].Position.x;
+
+		if (verts[i].Position.y < minY)
+			minY = verts[i].Position.y;
+		if (verts[i].Position.y > maxY)
+			maxY = verts[i].Position.y;
+
+		if (verts[i].Position.z < minZ)
+			minZ = verts[i].Position.z;
+		if (verts[i].Position.z > maxZ)
+			maxZ = verts[i].Position.z;
+	}
+
+	collider = std::make_unique<Collider>(minX, minY, minZ, maxX, maxY, maxZ);
 }

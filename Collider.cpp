@@ -1,25 +1,17 @@
 #include "Collider.h"
-
 Collider::Collider(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
 {
-	this->minX = minX;
-	this->minY = minY;
-	this->minZ = minZ;
-	this->maxX = maxX;
-	this->maxY = maxY;
-	this->maxZ = maxZ;
+	min = DirectX::XMFLOAT3(minX, minY, minZ);
+	max = DirectX::XMFLOAT3(maxX, maxY, maxZ);
 }
 
-bool Collider::IsCollidingWith(Collider &other)
+DirectX::XMFLOAT3 Collider::GetMax()
 {
-	if (!(maxX >= other.minX && other.maxX >= minX))
-		return false;
-
-	if (!(maxY >= other.minY && other.maxY >= minY))
-		return false;
-
-	if (!(maxZ >= other.minZ && other.maxZ >= minZ))
-		return false;
-
-	return true;
+	return max;
 }
+
+DirectX::XMFLOAT3 Collider::GetMin()
+{
+	return min;
+}
+

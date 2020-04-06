@@ -49,6 +49,11 @@ XMFLOAT4X4 Transform::GetWorldMatrix()
 	return worldMatrix;
 }
 
+DirectX::XMFLOAT4X4 Transform::GetRotlessWorldMatrix()
+{
+	return rotlessWorldMat;
+}
+
 void Transform::MoveAbsolute(float x, float y, float z)
 {
 	XMVECTOR pos = XMLoadFloat3(&position);
@@ -95,8 +100,10 @@ void Transform::RecalculateWorldMatrix()
 	XMMATRIX translationMat = XMMatrixTranslation(position.x, position.y, position.z);
 
 	XMMATRIX world = scaleMat * rotationMat * translationMat;
+	XMMATRIX rotlessWorld = scaleMat * translationMat;
 
 	XMStoreFloat4x4(&worldMatrix, world);
-
+	XMStoreFloat4x4(&rotlessWorldMat, rotlessWorld);
 	worldDirty = false;
 }
+
