@@ -112,7 +112,7 @@ void Game::LoadShaders()
 // --------------------------------------------------------
 void Game::CreateBasicGeometry()
 {
-	auto sphereMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
+	auto cylinderMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cylinder.obj").c_str(), device);
 	auto cubeMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device);
 	auto helixMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device);
 
@@ -133,8 +133,13 @@ void Game::CreateBasicGeometry()
 		nullptr, rockTexture.GetAddressOf());
 
 	hResult = CreateWICTextureFromFile(device.Get(),
+		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/target.png").c_str(),
+		nullptr, targetTexture.GetAddressOf());
+
+	hResult = CreateWICTextureFromFile(device.Get(),
 		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/rock_normals.png").c_str(),
 		nullptr, rockTextureNMap.GetAddressOf());
+
 
 	D3D11_SAMPLER_DESC sampDescription = {};
 	sampDescription.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -147,20 +152,55 @@ void Game::CreateBasicGeometry()
 
 	auto cloverMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 0, cloverTexture, samplerState, vertexShader, pixelShader);
 	auto rockMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShader, pixelShader);
+	auto targetMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, targetTexture, samplerState, vertexShader, pixelShader);
 	auto rockMatNMap = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShaderNormalMap, pixelShaderNormalMap, rockTextureNMap);
 
-	//Make Entities
-	entities = std::vector<Entity>();
-	entities.push_back(Entity(sphereMesh, rockMatNMap));
-	auto squareMesh = MakeSquare(0, 0, 0.25f);
-	entities.push_back(Entity(sphereMesh, rockMat));
-	entities.back().GetTransform()->SetPosition(3, 0, 0);
-	entities.push_back(Entity(helixMesh, rockMat));
-	entities.back().GetTransform()->SetPosition(-3, 0, 0);
-	entities.push_back(Entity(helixMesh, cloverMat));
-	entities.back().GetTransform()->SetPosition(0, -3, 0);
-	entities.push_back(Entity(cubeMesh, cloverMat));
-	entities.back().GetTransform()->SetPosition(0, 3, 0);
+	//Make Targets, each divided into 3 rows and rotated 90 degrees
+	targets = std::vector<Target>();
+
+	//First row of targets
+	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back().SetPosition(-4, 0, 5);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back().SetPosition(-2, 0, 5);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back().SetPosition(-0, 0, 5);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back().SetPosition(2, 0, 5);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back().SetPosition(4, 0, 5);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+
+	//second row of targets
+	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back().SetPosition(-3, 2, 9);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back().SetPosition(-1, 2, 9);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back().SetPosition(1, 2, 9);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back().SetPosition(3, 2, 9);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+
+	//Final row of targets
+	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
+	targets.back().SetPosition(-2, 4, 13);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
+	targets.back().SetPosition(-0, 4, 13);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
+	targets.back().SetPosition(2, 4, 13);
+	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+
+
 }
 
 
@@ -187,11 +227,11 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	entities[0].GetTransform()->Rotate(0, 0, XM_PIDIV4 * deltaTime);
-	entities[1].GetTransform()->Rotate(0, 0, -XM_PIDIV4 * deltaTime);
-	entities[2].GetTransform()->Scale(1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime));
-	entities[3].GetTransform()->MoveAbsolute(-.1f * deltaTime, 0, 0);
-	entities.back().GetTransform()->MoveAbsolute(0, .1f * deltaTime, 0);
+	//Draw the entities
+	for (size_t i = 0; i < targets.size(); i++)
+	{
+		targets[i].Update(deltaTime);//Move the targets
+	}
 
 	camera->Update(deltaTime, this->hWnd);
 }
@@ -219,9 +259,9 @@ void Game::Draw(float deltaTime, float totalTime)
 	SetGlobalPixelShaderInfo(pixelShaderNormalMap);
 
 	//Draw the entities
-	for (size_t i = 0; i < entities.size(); i++)
+	for (size_t i = 0; i < targets.size(); i++)
 	{
-		entities[i].DrawObject(context.Get(), camera.get());
+		targets[i].DrawObject(context.Get(), camera.get());
 	}
 
 	// Present the back buffer to the user

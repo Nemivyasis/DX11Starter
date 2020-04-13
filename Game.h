@@ -10,6 +10,7 @@
 #include "Entity.h"
 #include "Camera.h"
 #include "Lights.h"
+#include "Target.h"
 
 class Game 
 	: public DXCore
@@ -43,7 +44,8 @@ private:
 	//    Component Object Mode, which DirectX objects do
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
-	std::vector<Entity> entities;
+	std::vector<Target> targets;
+
 
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
@@ -54,6 +56,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cloverTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> targetTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTextureNMap;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
 

@@ -18,6 +18,7 @@ public:
 	void MoveRelative(float x, float y, float z);
 	void Rotate(float pitch, float yaw, float roll);
 	void Scale(float x, float y, float z);
+
 private:
 	bool worldDirty = false;
 	DirectX::XMFLOAT4X4 worldMatrix;
