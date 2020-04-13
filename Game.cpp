@@ -155,50 +155,50 @@ void Game::CreateBasicGeometry()
 	auto targetMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, targetTexture, samplerState, vertexShader, pixelShader);
 	auto rockMatNMap = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShaderNormalMap, pixelShaderNormalMap, rockTextureNMap);
 
-	//Make Targets, each divided into 3 rows and rotated 90 degrees
+	//Make Targets, each divided into 3 rows.  Rotation is commented out until I get a texture that applies to the top of the cylinders
 	targets = std::vector<Target>();
 
 	//First row of targets
 	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
 	targets.back().SetPosition(-4, 0, 5);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
 	targets.back().SetPosition(-2, 0, 5);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
 	targets.back().SetPosition(-0, 0, 5);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
 	targets.back().SetPosition(2, 0, 5);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
 	targets.back().SetPosition(4, 0, 5);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 
 	//second row of targets
 	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
 	targets.back().SetPosition(-3, 2, 9);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
 	targets.back().SetPosition(-1, 2, 9);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
 	targets.back().SetPosition(1, 2, 9);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
 	targets.back().SetPosition(3, 2, 9);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 
 	//Final row of targets
 	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
 	targets.back().SetPosition(-2, 4, 13);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	///targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
 	targets.back().SetPosition(-0, 4, 13);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
 	targets.back().SetPosition(2, 4, 13);
-	targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 
 
 }
