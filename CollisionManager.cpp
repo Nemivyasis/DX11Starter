@@ -4,12 +4,12 @@ CollisionManager::CollisionManager()
 {
 }
 
-CollisionManager::CollisionManager(vector<Entity> entities)
+CollisionManager::CollisionManager(vector<shared_ptr<Entity>> entities)
 {
 	this->entities = entities;
 }
 
-void CollisionManager::AddEntity(Entity &entity)
+void CollisionManager::AddEntity(shared_ptr<Entity> entity)
 {
 	entities.push_back(entity);
 }
@@ -24,7 +24,7 @@ void CollisionManager::RemoveEntity(int pos)
 		return;
 	}
 
-	vector<Entity>::iterator it = entities.begin();
+	vector<shared_ptr<Entity>>::iterator it = entities.begin();
 
 	it += pos - 1;
 
@@ -36,8 +36,8 @@ void CollisionManager::Update()
 	for (int i = 0; i < entities.size() - 1; i++) {
 		int j = i + 1;
 		for (; j < entities.size(); j++) {
-			if (entities[i].IsCollidingWith(entities[j])) {
-				ResolveCollision(entities[i], entities[j]);
+			if (entities[i]->IsCollidingWith(*entities[j])) {
+				ResolveCollision(*entities[i], *entities[j]);
 			}
 		}
 	}

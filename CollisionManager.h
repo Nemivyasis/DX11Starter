@@ -8,13 +8,13 @@ class CollisionManager
 {
 public:
 	CollisionManager();
-	CollisionManager(vector<Entity> entities);
-	void AddEntity(Entity &entity);
+	CollisionManager(vector<shared_ptr<Entity>> entities);
+	void AddEntity(shared_ptr<Entity> entity);
 	void RemoveEntity(int pos);
 	void Update();
 	void ResolveCollision(Entity &a, Entity &b);
 
 private:
-	vector<Entity> entities;
+	vector<shared_ptr<Entity>> entities;
 };
 
