@@ -150,17 +150,17 @@ void Game::CreateBasicGeometry()
 	auto rockMatNMap = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShaderNormalMap, pixelShaderNormalMap, rockTextureNMap);
 
 	//Make Entities
-	entities = std::vector<Entity>();
-	entities.push_back(Entity(sphereMesh, rockMatNMap));
+	entities = std::vector<std::shared_ptr<Entity>>();
+	entities.push_back(std::make_shared<Entity>(sphereMesh, rockMatNMap));
 	auto squareMesh = MakeSquare(0, 0, 0.25f);
-	entities.push_back(Entity(sphereMesh, rockMat));
-	entities.back().GetTransform()->SetPosition(3, 0, 0);
-	entities.push_back(Entity(helixMesh, rockMat));
-	entities.back().GetTransform()->SetPosition(-3, 0, 0);
-	entities.push_back(Entity(helixMesh, cloverMat));
-	entities.back().GetTransform()->SetPosition(0, -3, 0);
-	entities.push_back(Entity(cubeMesh, cloverMat));
-	entities.back().GetTransform()->SetPosition(0, 3, 0);
+	entities.push_back(std::make_shared<Entity>(sphereMesh, rockMat));
+	entities.back()->GetTransform()->SetPosition(3, 0, 0);
+	entities.push_back(std::make_shared<Entity>(helixMesh, rockMat));
+	entities.back()->GetTransform()->SetPosition(-3, 0, 0);
+	entities.push_back(std::make_shared<Entity>(helixMesh, cloverMat));
+	entities.back()->GetTransform()->SetPosition(0, -3, 0);
+	entities.push_back(std::make_shared<Entity>(cubeMesh, cloverMat));
+	entities.back()->GetTransform()->SetPosition(0, 3, 0);
 }
 
 
@@ -187,11 +187,11 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	entities[0].GetTransform()->Rotate(0, 0, XM_PIDIV4 * deltaTime);
-	entities[1].GetTransform()->Rotate(0, 0, -XM_PIDIV4 * deltaTime);
-	entities[2].GetTransform()->Scale(1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime));
-	entities[3].GetTransform()->MoveAbsolute(-.1f * deltaTime, 0, 0);
-	entities.back().GetTransform()->MoveAbsolute(0, .1f * deltaTime, 0);
+	entities[0]->GetTransform()->Rotate(0, 0, XM_PIDIV4 * deltaTime);
+	entities[1]->GetTransform()->Rotate(0, 0, -XM_PIDIV4 * deltaTime);
+	entities[2]->GetTransform()->Scale(1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime), 1 - (0.1f * deltaTime));
+	entities[3]->GetTransform()->MoveAbsolute(-.1f * deltaTime, 0, 0);
+	entities.back()->GetTransform()->MoveAbsolute(0, .1f * deltaTime, 0);
 
 	camera->Update(deltaTime, this->hWnd);
 }
@@ -221,7 +221,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//Draw the entities
 	for (size_t i = 0; i < entities.size(); i++)
 	{
-		entities[i].DrawObject(context.Get(), camera.get());
+		entities[i]->DrawObject(context.Get(), camera.get());
 	}
 
 	// Present the back buffer to the user

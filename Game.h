@@ -43,7 +43,7 @@ private:
 	//    Component Object Mode, which DirectX objects do
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
-	std::vector<Entity> entities;
+	std::vector<std::shared_ptr<Entity>> entities;
 
 	// Shaders and shader-related constructs
 	std::shared_ptr<SimplePixelShader> pixelShader;
