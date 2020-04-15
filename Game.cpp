@@ -248,7 +248,7 @@ void Game::Update(float deltaTime, float totalTime)
 
 	if (projectiles.size() > 0) 
 	{
-		projectiles
+		//projectiles
 	}
 }
 
