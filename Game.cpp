@@ -115,6 +115,7 @@ void Game::CreateBasicGeometry()
 	auto cylinderMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cylinder.obj").c_str(), device);
 	auto cubeMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device);
 	auto helixMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device);
+	sphereMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
 
 	//Make Materials
 	/*auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f), 64, vertexShader, pixelShader);
@@ -150,7 +151,7 @@ void Game::CreateBasicGeometry()
 	sampDescription.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&sampDescription, samplerState.GetAddressOf());
 
-	auto cloverMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 0, cloverTexture, samplerState, vertexShader, pixelShader);
+	cloverMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 0, cloverTexture, samplerState, vertexShader, pixelShader);
 	auto rockMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShader, pixelShader);
 	auto targetMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, targetTexture, samplerState, vertexShader, pixelShader);
 	auto rockMatNMap = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShaderNormalMap, pixelShaderNormalMap, rockTextureNMap);
@@ -199,8 +200,6 @@ void Game::CreateBasicGeometry()
 	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
 	targets.back().SetPosition(2, 4, 13);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-
-
 }
 
 
@@ -234,6 +233,23 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 
 	camera->Update(deltaTime, this->hWnd);
+
+	// -- SHOOTING --
+
+	// Keep track of projectiles on screen 
+	projectiles = std::vector<Projectile>();
+
+	// Check to see if right mouse button is down
+	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+	{
+		printf("clicked");
+		projectiles.push_back(Projectile(sphereMesh, cloverMat, 5, camera.get()->GetTransform()->GetPosition()));
+	}
+
+	if (projectiles.size() > 0) 
+	{
+		projectiles
+	}
 }
 
 // --------------------------------------------------------

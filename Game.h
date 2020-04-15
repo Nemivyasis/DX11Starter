@@ -11,6 +11,7 @@
 #include "Camera.h"
 #include "Lights.h"
 #include "Target.h"
+#include "Projectile.h"
 
 class Game 
 	: public DXCore
@@ -45,6 +46,7 @@ private:
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
 	std::vector<Target> targets;
+	std::vector<Projectile> projectiles;
 
 
 	// Shaders and shader-related constructs
@@ -67,5 +69,10 @@ private:
 
 	//Camera class
 	std::unique_ptr<Camera> camera;
+
+	// Projectile mesh
+	std::shared_ptr<Mesh> sphereMesh;
+	// Projectile material
+	std::shared_ptr<Material> cloverMat;
 };
 
