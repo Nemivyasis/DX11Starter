@@ -80,6 +80,10 @@ void Game::Init()
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	camera = std::make_unique<Camera>((float)this->width / this->height);
+
+	// for storing projectiles
+	// Keep track of projectiles on screen 
+	projectiles = std::vector<Projectile>();
 }
 
 // --------------------------------------------------------
@@ -236,19 +240,25 @@ void Game::Update(float deltaTime, float totalTime)
 
 	// -- SHOOTING --
 
-	// Keep track of projectiles on screen 
-	projectiles = std::vector<Projectile>();
-
 	// Check to see if right mouse button is down
 	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
 	{
 		printf("clicked");
-		projectiles.push_back(Projectile(sphereMesh, cloverMat, 5, camera.get()->GetTransform()->GetPosition()));
+		projectiles.push_back(Projectile(
+			sphereMesh, 
+			cloverMat, 
+			10, 
+			camera.get()->GetTransform()->GetPosition(), 
+			camera.get()->GetTransform()->GetRotation())
+		);
 	}
 
 	if (projectiles.size() > 0) 
 	{
-		//projectiles
+		for (size_t i = 0; i < projectiles.size(); i++)
+		{
+			projectiles[i].Fire(deltaTime);
+		}
 	}
 }
 
@@ -278,6 +288,15 @@ void Game::Draw(float deltaTime, float totalTime)
 	for (size_t i = 0; i < targets.size(); i++)
 	{
 		targets[i].DrawObject(context.Get(), camera.get());
+	}
+
+	// check if there are projectiles
+	if (projectiles.size() > 0)
+	{
+		for (size_t i = 0; i < projectiles.size(); i++)
+		{			
+			projectiles[i].DrawObject(context.Get(), camera.get());
+		}
 	}
 
 	// Present the back buffer to the user

@@ -73,6 +73,7 @@ void Transform::MoveRelative(float x, float y, float z)
 	pos += move;
 
 	XMStoreFloat3(&position, pos);
+	worldDirty = true;
 }
 
 void Transform::Rotate(float pitch, float yaw, float roll)
