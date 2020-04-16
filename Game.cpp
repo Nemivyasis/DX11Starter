@@ -253,12 +253,27 @@ void Game::Update(float deltaTime, float totalTime)
 		);
 	}
 
+	// move the projectiles 
 	if (projectiles.size() > 0) 
 	{
 		for (size_t i = 0; i < projectiles.size(); i++)
 		{
 			projectiles[i].Fire(deltaTime);
 		}
+	}
+
+	for (size_t i = 0; i < projectiles.size(); i++)
+	{
+		// if outside the range, delete the projectile
+		if (projectiles[i].GetPosition().x > 50 || projectiles[i].GetPosition().x < -50 || 
+			projectiles[i].GetPosition().y > 50 || projectiles[i].GetPosition().y < -50 ||
+			projectiles[i].GetPosition().z > 50 || projectiles[i].GetPosition().z < -50)
+		{
+			projectiles.erase(projectiles.begin() + i);
+		}
+
+		// if collides with target, delete the projectile
+
 	}
 }
 

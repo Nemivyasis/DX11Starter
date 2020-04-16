@@ -33,8 +33,3 @@ DirectX::XMFLOAT3 Projectile::GetRotation()
 {
 	return GetTransform()->GetRotation();
 }
-
-void Projectile::DestroyProjectile()
-{
-
-}
