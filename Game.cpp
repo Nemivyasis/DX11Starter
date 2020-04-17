@@ -83,7 +83,7 @@ void Game::Init()
 
 	// for storing projectiles
 	// Keep track of projectiles on screen 
-	projectiles = std::vector<Projectile>();
+	projectiles = std::vector < std::shared_ptr< Projectile >> ();
 }
 
 // --------------------------------------------------------
@@ -161,48 +161,48 @@ void Game::CreateBasicGeometry()
 	auto rockMatNMap = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShaderNormalMap, pixelShaderNormalMap, rockTextureNMap);
 
 	//Make Targets, each divided into 3 rows.  Rotation is commented out until I get a texture that applies to the top of the cylinders
-	targets = std::vector<Target>();
+	targets = std::vector<std::shared_ptr<Target>>();
 
 	//First row of targets
-	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
-	targets.back().SetPosition(-4, 0, 5);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back()->SetPosition(-4, 0, 5);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
-	targets.back().SetPosition(-2, 0, 5);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back()->SetPosition(-2, 0, 5);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
-	targets.back().SetPosition(-0, 0, 5);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back()->SetPosition(-0, 0, 5);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
-	targets.back().SetPosition(2, 0, 5);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back()->SetPosition(2, 0, 5);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 10, 5, 5));
-	targets.back().SetPosition(4, 0, 5);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 10, 5, 5));
+	targets.back()->SetPosition(4, 0, 5);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 
 	//second row of targets
-	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
-	targets.back().SetPosition(-3, 2, 9);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back()->SetPosition(-3, 2, 9);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
-	targets.back().SetPosition(-1, 2, 9);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back()->SetPosition(-1, 2, 9);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
-	targets.back().SetPosition(1, 2, 9);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back()->SetPosition(1, 2, 9);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 20, 7, 5));
-	targets.back().SetPosition(3, 2, 9);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 20, 7, 5));
+	targets.back()->SetPosition(3, 2, 9);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 
 	//Final row of targets
-	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
-	targets.back().SetPosition(-2, 4, 13);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 30, 10, 5));
+	targets.back()->SetPosition(-2, 4, 13);
 	///targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
-	targets.back().SetPosition(-0, 4, 13);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 30, 10, 5));
+	targets.back()->SetPosition(-0, 4, 13);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
-	targets.push_back(Target(cylinderMesh, targetMat, 30, 10, 5));
-	targets.back().SetPosition(2, 4, 13);
+	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 30, 10, 5));
+	targets.back()->SetPosition(2, 4, 13);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
 }
 
@@ -233,7 +233,7 @@ void Game::Update(float deltaTime, float totalTime)
 	//Draw the entities
 	for (size_t i = 0; i < targets.size(); i++)
 	{
-		targets[i].Update(deltaTime);//Move the targets
+		targets[i]->Update(deltaTime);//Move the targets
 	}
 
 	camera->Update(deltaTime, this->hWnd);
@@ -244,7 +244,7 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
 	{
 		printf("clicked");
-		projectiles.push_back(Projectile(
+		projectiles.push_back(std::make_shared<Projectile>(
 			sphereMesh, 
 			cloverMat, 
 			10, 
@@ -258,16 +258,16 @@ void Game::Update(float deltaTime, float totalTime)
 	{
 		for (size_t i = 0; i < projectiles.size(); i++)
 		{
-			projectiles[i].Fire(deltaTime);
+			projectiles[i]->Fire(deltaTime);
 		}
 	}
 
 	for (size_t i = 0; i < projectiles.size(); i++)
 	{
 		// if outside the range, delete the projectile
-		if (projectiles[i].GetPosition().x > 50 || projectiles[i].GetPosition().x < -50 || 
-			projectiles[i].GetPosition().y > 50 || projectiles[i].GetPosition().y < -50 ||
-			projectiles[i].GetPosition().z > 50 || projectiles[i].GetPosition().z < -50)
+		if (projectiles[i]->GetPosition().x > 50 || projectiles[i]->GetPosition().x < -50 || 
+			projectiles[i]->GetPosition().y > 50 || projectiles[i]->GetPosition().y < -50 ||
+			projectiles[i]->GetPosition().z > 50 || projectiles[i]->GetPosition().z < -50)
 		{
 			projectiles.erase(projectiles.begin() + i);
 		}
@@ -302,7 +302,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	//Draw the entities
 	for (size_t i = 0; i < targets.size(); i++)
 	{
-		targets[i].DrawObject(context.Get(), camera.get());
+		targets[i]->DrawObject(context.Get(), camera.get());
 	}
 
 	// check if there are projectiles
@@ -310,7 +310,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	{
 		for (size_t i = 0; i < projectiles.size(); i++)
 		{			
-			projectiles[i].DrawObject(context.Get(), camera.get());
+			projectiles[i]->DrawObject(context.Get(), camera.get());
 		}
 	}
 

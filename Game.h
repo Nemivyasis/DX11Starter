@@ -45,8 +45,8 @@ private:
 	//    Component Object Mode, which DirectX objects do
 	//  - More info here: https://github.com/Microsoft/DirectXTK/wiki/ComPtr
 
-	std::vector<Target> targets;
-	std::vector<Projectile> projectiles;
+	std::vector<std::shared_ptr<Target>> targets;
+	std::vector<std::shared_ptr<Projectile>> projectiles;
 
 
 	// Shaders and shader-related constructs
