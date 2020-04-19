@@ -9,6 +9,8 @@ class Target :
 		float GetSpeed();
 		void Update(float deltaTime);
 		void SetPosition(float x, float y, float z);
+
+		bool isDead;
 	private:
 		float pointValue;
 		float speed;

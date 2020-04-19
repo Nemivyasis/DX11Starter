@@ -2,42 +2,66 @@
 
 CollisionManager::CollisionManager()
 {
+	this->targets = std::vector<std::shared_ptr<Entity>>();
+	this->bullets = std::vector<std::shared_ptr<Entity>>();
 }
 
-CollisionManager::CollisionManager(vector<shared_ptr<Entity>> entities)
+void CollisionManager::AddTarget(shared_ptr<Entity> entity)
 {
-	this->entities = entities;
+	this->targets.push_back(entity);
+	printf("1");
 }
 
-void CollisionManager::AddEntity(shared_ptr<Entity> entity)
+void CollisionManager::AddBullet(shared_ptr<Entity> entity)
 {
-	entities.push_back(entity);
+	bullets.push_back(entity);
+	printf("1");
 }
 
-void CollisionManager::RemoveEntity(int pos)
+void CollisionManager::RemoveTarget(int pos)
 {
 	if (pos < 0) {
 		return;
 	}
 
-	if (pos > entities.size() - 1) {
+	if (pos > targets.size() - 1) {
 		return;
 	}
 
-	vector<shared_ptr<Entity>>::iterator it = entities.begin();
+	vector<shared_ptr<Entity>>::iterator it = targets.begin();
 
 	it += pos - 1;
 
-	entities.erase(it);
+	targets.erase(it);
 }
+
+void CollisionManager::RemoveBullet(int pos)
+{
+	if (pos < 0) {
+		return;
+	}
+
+	if (pos > bullets.size() - 1) {
+		return;
+	}
+
+	vector<shared_ptr<Entity>>::iterator it = bullets.begin();
+
+	it += pos - 1;
+
+	bullets.erase(it);
+}
+
 
 void CollisionManager::Update()
 {
-	for (int i = 0; i < entities.size() - 1; i++) {
-		int j = i + 1;
-		for (; j < entities.size(); j++) {
-			if (entities[i]->IsCollidingWith(*entities[j])) {
-				ResolveCollision(*entities[i], *entities[j]);
+	
+	if (bullets.size() != 0 && targets.size() != 0) {
+		for (int i = 0; i < bullets.size(); i++) {
+			for (int j = 0; j < targets.size(); j++) {
+				if (bullets[i]->IsCollidingWith(*targets[j])) {
+					ResolveCollision(*bullets[i], *targets[j]);
+				}
 			}
 		}
 	}
@@ -45,4 +69,6 @@ void CollisionManager::Update()
 
 void CollisionManager::ResolveCollision(Entity& a, Entity& b)
 {
+	a.GetMaterial()->SetColorTint(DirectX::XMFLOAT4(1, 0, 0, 1));
+	b.GetMaterial()->SetColorTint(DirectX::XMFLOAT4(1, 0, 0, 1));
 }

@@ -10,6 +10,7 @@ class Projectile: public Entity
 		DirectX::XMFLOAT3 GetPosition();
 		void SetRotation();
 		DirectX::XMFLOAT3 GetRotation();
+		bool isDead;
 	private:
 		float speed;
 		DirectX::XMFLOAT3 pos;

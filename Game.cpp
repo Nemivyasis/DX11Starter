@@ -83,7 +83,10 @@ void Game::Init()
 
 	// for storing projectiles
 	// Keep track of projectiles on screen 
-	projectiles = std::vector < std::shared_ptr< Projectile >> ();
+	projectiles = std::vector < std::shared_ptr< Projectile >>();
+
+
+	collisionManeger = std::make_unique<CollisionManager>();
 }
 
 // --------------------------------------------------------
@@ -127,7 +130,7 @@ void Game::CreateBasicGeometry()
 	auto blueMaterial = std::make_shared<Material>(XMFLOAT4(0.1f, 0.1f, 1, 1.0f), 64, vertexShader, pixelShader);
 
 	auto whiteMaterial = std::make_shared<Material>(XMFLOAT4(1, 1, 1 , 1.0f), 64, vertexShader, pixelShader);*/
-	
+
 	auto hResult = CreateWICTextureFromFile(device.Get(),
 		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/clover.jpg").c_str(),
 		nullptr, cloverTexture.GetAddressOf());
@@ -204,6 +207,12 @@ void Game::CreateBasicGeometry()
 	targets.push_back(std::make_shared<Target>(cylinderMesh, targetMat, 30, 10, 5));
 	targets.back()->SetPosition(2, 4, 13);
 	//targets.back().GetTransform()->Rotate(XM_PIDIV2, 0, 0);
+
+	for (int i = 0; i < targets.size(); i++) {
+		//collisionManeger->AddTarget(targets[i]);
+	}
+
+
 }
 
 
@@ -217,7 +226,7 @@ void Game::OnResize()
 	DXCore::OnResize();
 
 	if (camera != nullptr) {
-		camera->UpdateProjectionMatrix((float) this->width / this->height);
+		camera->UpdateProjectionMatrix((float)this->width / this->height);
 	}
 }
 
@@ -243,18 +252,19 @@ void Game::Update(float deltaTime, float totalTime)
 	// Check to see if right mouse button is down
 	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
 	{
-		printf("clicked");
+		//printf("clicked");
 		projectiles.push_back(std::make_shared<Projectile>(
-			sphereMesh, 
-			cloverMat, 
-			10, 
-			camera.get()->GetTransform()->GetPosition(), 
+			sphereMesh,
+			cloverMat,
+			10,
+			camera.get()->GetTransform()->GetPosition(),
 			camera.get()->GetTransform()->GetRotation())
 		);
+		//collisionManeger->AddBullet(projectiles[projectiles.size() - 1]);
 	}
 
 	// move the projectiles 
-	if (projectiles.size() > 0) 
+	if (projectiles.size() > 0)
 	{
 		for (size_t i = 0; i < projectiles.size(); i++)
 		{
@@ -262,19 +272,44 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 
+	//collisionManeger->Update();
+
 	for (size_t i = 0; i < projectiles.size(); i++)
 	{
 		// if outside the range, delete the projectile
-		if (projectiles[i]->GetPosition().x > 50 || projectiles[i]->GetPosition().x < -50 || 
+		if (projectiles[i]->GetPosition().x > 50 || projectiles[i]->GetPosition().x < -50 ||
 			projectiles[i]->GetPosition().y > 50 || projectiles[i]->GetPosition().y < -50 ||
 			projectiles[i]->GetPosition().z > 50 || projectiles[i]->GetPosition().z < -50)
 		{
-			projectiles.erase(projectiles.begin() + i);
+			projectiles[i]->isDead = true;
 		}
 
 		// if collides with target, delete the projectile
 
+		for (int j = 0; j < targets.size(); j++) {
+			if (projectiles[i]->IsCollidingWith(*targets[j])) {
+				projectiles[i]->isDead = true;
+				targets[j]->isDead = true;
+			}
+		}
 	}
+
+	if (!projectiles.empty()) {
+		for (int i = projectiles.size() - 1; i >= 0; i--) {
+			if (projectiles[i]->isDead) {
+				projectiles.erase(projectiles.begin() + i);
+			}
+		}
+	}
+
+	if (!targets.empty()) {
+		for (int i = targets.size() - 1; i >= 0; i--) {
+			if (targets[i]->isDead) {
+				targets.erase(targets.begin() + i);
+			}
+		}
+	}
+	
 }
 
 // --------------------------------------------------------
@@ -309,7 +344,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	if (projectiles.size() > 0)
 	{
 		for (size_t i = 0; i < projectiles.size(); i++)
-		{			
+		{
 			projectiles[i]->DrawObject(context.Get(), camera.get());
 		}
 	}
@@ -344,7 +379,7 @@ std::shared_ptr<Mesh> Game::MakeSquare(float centerX, float centerY, float sideS
 	return std::make_shared<Mesh>(vertices, 4, indices, 6, device);
 }
 
-std::shared_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float centerY, float radius) 
+std::shared_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float centerY, float radius)
 {
 	if (numSides < 3)
 		return NULL;
@@ -361,8 +396,8 @@ std::shared_ptr<Mesh> Game::MakePolygon(int numSides, float centerX, float cente
 
 	for (int i = 0; i < (unsigned long long) numSides - 1; i++)
 	{
-		float xOffset = radius * (float) cos(angle * (i + 1.0));
-		float yOffset = radius * (float) sin(angle * (i + 1.0));
+		float xOffset = radius * (float)cos(angle * (i + 1.0));
+		float yOffset = radius * (float)sin(angle * (i + 1.0));
 		vertices[i + 2] = { XMFLOAT3(centerX + xOffset, centerY + yOffset, 0.0f), XMFLOAT3(0, 0, -1), XMFLOAT2(0, 0) };
 
 		indices[3 * i] = 0;

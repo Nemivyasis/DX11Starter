@@ -5,6 +5,7 @@ Projectile::Projectile(std::shared_ptr<Mesh> meshptr, std::shared_ptr<Material> 
 	this->speed = speed;
 	this->camPos = camPos;
 	this->camRot = camRot;
+	this->isDead = false;
 	SetPosition();
 	SetRotation();
 }

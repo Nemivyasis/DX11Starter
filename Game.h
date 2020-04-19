@@ -12,6 +12,7 @@
 #include "Lights.h"
 #include "Target.h"
 #include "Projectile.h"
+#include "CollisionManager.h"
 
 class Game 
 	: public DXCore
@@ -74,5 +75,7 @@ private:
 	std::shared_ptr<Mesh> sphereMesh;
 	// Projectile material
 	std::shared_ptr<Material> cloverMat;
+
+	std::unique_ptr<CollisionManager> collisionManeger;
 };
 

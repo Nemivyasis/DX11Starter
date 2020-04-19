@@ -7,6 +7,7 @@ Target::Target(std::shared_ptr<Mesh> meshptr, std::shared_ptr<Material> mat, flo
     this->speed = speed;
     this->range = range;
     this->origin = GetTransform()->GetPosition();//Gets the origin of the target
+    this->isDead = false;
 }
 
 //Gets the point value of the target
