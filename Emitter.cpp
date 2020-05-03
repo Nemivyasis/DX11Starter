@@ -244,13 +244,100 @@ void Emitter::SpawnParticle()
 
 void Emitter::CopyParticlesToGPU(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* camera)
 {
+	//Check to see if the buffer is contiguous or wrapping
+	if (firstAliveIndex < firstDeadIndex) // contiguous
+	{
+		for (int i = firstAliveIndex; i < firstDeadIndex; i++)
+			CopyOneParticle(i, camera);
+	}
+	else //wrapping
+	{
+		//Update the first half from 0 to the first dead particle
+		for (int i = 0; i < firstDeadIndex; i++)
+			CopyOneParticle(i, camera);
+
+		//Copy second half from first alive to end
+		for (int i = firstAliveIndex; i < maxParticles; i++)
+			CopyOneParticle(i, camera);
+	}
+
+	//All mapped particles copied and sent to buffer using memcpy
+	D3D11_MAPPED_SUBRESOURCE mapped = {};
+	context->Map(vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped); //lock the resource from GPU
+
+	//copy particles
+	memcpy(mapped.pData, localParticleVertices, sizeof(ParticleVertex) * 4 * maxParticles);
+
+	//unlock resource
+	context->Unmap(vertexBuffer.Get(), 0);
 }
 
 void Emitter::CopyOneParticle(int index, Camera* camera)
 {
+	int i = index * 4; //get the index of the first vertex of the particle
+
+	localParticleVertices[i + 0].Position = CalcParticleVertexPosition(index, 0, camera);
+	localParticleVertices[i + 1].Position = CalcParticleVertexPosition(index, 1, camera);
+	localParticleVertices[i + 2].Position = CalcParticleVertexPosition(index, 2, camera);
+	localParticleVertices[i + 3].Position = CalcParticleVertexPosition(index, 3, camera);
+
+	localParticleVertices[i + 0].Color = particles[index].Color;
+	localParticleVertices[i + 1].Color = particles[index].Color;
+	localParticleVertices[i + 2].Color = particles[index].Color;
+	localParticleVertices[i + 3].Color = particles[index].Color;
+
+	//if the particle uses a spritesheet, update UV coords with age too
+	if (isSpriteSheet) 
+	{
+		//what percent of lifetime has this particle existed
+		float agePercent = particles[index].Age / lifetime;
+
+		//get overall index
+		int ssIndex = (int)floor(agePercent * (spriteSheetWidth * spriteSheetHeight));
+
+		//Get the UV index based on overall index
+		int uIndex = ssIndex % spriteSheetWidth;
+		int vIndex = ssIndex / spriteSheetWidth; // make sure both integers so it is automatically floored
+
+		//Convert to a top left corner in UV (0-1)
+		float u = uIndex / (float)spriteSheetWidth;
+		float v = vIndex / (float)spriteSheetHeight;
+
+		localParticleVertices[i + 0].UV = XMFLOAT2(u, v);
+		localParticleVertices[i + 1].UV = XMFLOAT2(u + spriteSheetFrameWidth, v);
+		localParticleVertices[i + 2].UV = XMFLOAT2(u + spriteSheetFrameWidth, v + spriteSheetFrameHeight);
+		localParticleVertices[i + 3].UV = XMFLOAT2(u, v + spriteSheetFrameHeight);
+	}
 }
 
 DirectX::XMFLOAT3 Emitter::CalcParticleVertexPosition(int particleIndex, int quadCornerIndex, Camera* camera)
 {
-	return DirectX::XMFLOAT3();
+	//Get the right and up vectors out of the view matrix
+	XMFLOAT4X4 view = camera->GetViewMatrix();
+	XMVECTOR camRight = XMVectorSet(view._11, view._21, view._31, 0);
+	XMVECTOR camUp = XMVectorSet(view._12, view._22, view._32, 0);
+
+	//Determine the offset of this corner
+	//Because we already set uv's during emitter creation
+	//we can change that to determine the general offset of this corner
+	XMFLOAT2 offset = DefaultUVs[quadCornerIndex];
+	offset.x = offset.x * 2 - 1; // Converts from [0,1] to [-1, 1]
+	offset.y = offset.y * -2 + 1; // Same but also makes it negative, flipping it
+
+	//Load into a vector, which is being assumed to be a float3 with 0 z
+	//Create a z rotation matrix and apply it to offset
+	XMVECTOR offsetVec = XMLoadFloat2(&offset);
+	XMMATRIX rotationMatrix = XMMatrixRotationZ(particles[particleIndex].Rotation);
+	offsetVec = XMVector3Transform(offsetVec, rotationMatrix);
+
+	//Add and scale the camera up and right vectors to the position as needed
+	//This is how the particle gets billboarded
+	XMVECTOR positionVector = XMLoadFloat3(&particles[particleIndex].Position);
+	positionVector += camRight * XMVectorGetX(offsetVec) * particles[particleIndex].Size;
+	positionVector += camUp * XMVectorGetY(offsetVec) * particles[particleIndex].Size;
+
+	//save the position to a float3
+	XMFLOAT3 position;
+	XMStoreFloat3(&position, positionVector);
+	return position;
 }
