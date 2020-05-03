@@ -119,12 +119,17 @@ void Emitter::Update(float dt)
 	if (firstAliveIndex < firstDeadIndex)
 	{
 		// First alive is BEFORE first dead, so the "living" particles are contiguous
+
+		// X X X X * * * * * X X X X X 
+
 		for (int i = firstAliveIndex; i < firstDeadIndex; i++)
 			UpdateSingleParticle(dt, i);
 	}
 	else
 	{
 		// First alive is AFTER first dead, so the "living" particles wrap around
+
+		// * * * * X X X X X * * * * *  
 
 		// Update first half (from firstAlive to max particles)
 		for (int i = firstAliveIndex; i < maxParticles; i++)
@@ -157,11 +162,84 @@ void Emitter::UpdateSingleParticle(float dt, int index)
 		return;
 	}
 
+	//update age
+	particles[index].Age += dt;
+
+	//check for death
+	if (particles[index].Age >= lifetime) {
+		firstAliveIndex++;
+		firstAliveIndex %= maxParticles;
+		livingParticleCount--;
+		return;
+	}
+
+	//calculate age percentage for lerp
+	float agePercent = particles[index].Age / lifetime;
+
+	//interpolate color
+	XMStoreFloat4(
+		&particles[index].Color,
+		XMVectorLerp(
+			XMLoadFloat4(&startColor),
+			XMLoadFloat4(&endColor),
+			agePercent
+		));
+
+	//interpolate rotation
+	particles[index].Rotation = particles[index].RotationStart + agePercent * (particles[index].RotationEnd - particles[index].RotationStart);
+
+	//interpolate size
+	particles[index].Size = startSize + agePercent * (endSize - startSize);
+
+	//Set position
+	XMVECTOR startPos = XMLoadFloat3(&particles[index].StartPosition);
+	XMVECTOR startVel = XMLoadFloat3(&particles[index].StartVelocity);
+	XMVECTOR accel = XMLoadFloat3(&emitterAcceleration);
+	float t = particles[index].Age;
+
+	//using constant acc fucntion
+	XMStoreFloat3(
+		&particles[index].Position,
+		accel * t * t / 2.0f + startVel * t + startPos);
 
 }
 
 void Emitter::SpawnParticle()
 {
+	//Check whether to spawn
+	if (livingParticleCount == maxParticles)
+		return;
+
+	//reset the first dead particle
+	particles[firstDeadIndex].Age = 0;
+	particles[firstDeadIndex].Size = startSize;
+	particles[firstDeadIndex].Color = startColor;
+
+	particles[firstDeadIndex].StartPosition = emitterPosition;
+	particles[firstDeadIndex].StartPosition.x += (((float)rand() / RAND_MAX) * 2 - 1) * positionRandomRange.x;
+	particles[firstDeadIndex].StartPosition.y += (((float)rand() / RAND_MAX) * 2 - 1) * positionRandomRange.y;
+	particles[firstDeadIndex].StartPosition.z += (((float)rand() / RAND_MAX) * 2 - 1) * positionRandomRange.z;
+
+	particles[firstDeadIndex].Position = particles[firstDeadIndex].StartPosition;
+
+	particles[firstDeadIndex].StartVelocity = startVelocity;
+	particles[firstDeadIndex].StartVelocity.x += (((float)rand() / RAND_MAX) * 2 - 1) * velocityRandomRange.x;
+	particles[firstDeadIndex].StartVelocity.y += (((float)rand() / RAND_MAX) * 2 - 1) * velocityRandomRange.y;
+	particles[firstDeadIndex].StartVelocity.z += (((float)rand() / RAND_MAX) * 2 - 1) * velocityRandomRange.z;
+
+	float rotStartMin = rotationRandomRanges.x;
+	float rotStartMax = rotationRandomRanges.y;
+	float rotEndMin = rotationRandomRanges.z;
+	float rotEndMax = rotationRandomRanges.w;
+
+	particles[firstDeadIndex].RotationStart = ((float)rand() / RAND_MAX) * (rotStartMax - rotStartMin) + rotStartMin;
+	particles[firstDeadIndex].RotationEnd = ((float)rand() / RAND_MAX) * (rotEndMax - rotEndMin) + rotEndMin;
+
+	//increment and warp
+	firstDeadIndex++;
+	firstDeadIndex %= maxParticles;
+
+	livingParticleCount++;
 }
 
 void Emitter::CopyParticlesToGPU(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* camera)
