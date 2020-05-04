@@ -86,7 +86,49 @@ void Game::Init()
 	projectiles = std::vector < std::shared_ptr< Projectile >>();
 
 	//Make particle system
+	//getTexture
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/particle.jpg").c_str(), 0, particleTexture.GetAddressOf());
 
+	//Create depth state
+	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
+	dsDesc.DepthEnable = true;
+	dsDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO; // turn off
+	dsDesc.DepthFunc = D3D11_COMPARISON_LESS;
+	device->CreateDepthStencilState(&dsDesc, particleDepthState.GetAddressOf());
+
+	//blend for particles (addative for now)
+	D3D11_BLEND_DESC blendDesc = {};
+	blendDesc.AlphaToCoverageEnable = false;
+	blendDesc.IndependentBlendEnable = false;
+	blendDesc.RenderTarget[0].BlendEnable = true;
+	blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA; //respect pixelshader alpha
+	blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+	device->CreateBlendState(&blendDesc, particleBlendState.GetAddressOf());
+
+	//Set up actual emitter
+	emitter = std::unique_ptr<Emitter>(new Emitter(
+		100,
+		10,
+		6,
+		0.1f,
+		1.0f,
+		XMFLOAT4(0.6f, 0.2f, 0.2f, 1),
+		XMFLOAT4(0.3f, 0.3f, 0.3f, 0),
+		XMFLOAT3(0, -0.5f, 0),
+		XMFLOAT3(0.2f, 0.1f, 0.2f),
+		XMFLOAT3(0, 4, 0),
+		XMFLOAT3(0.1f, 0.1f, 0.1f),
+		XMFLOAT4(-2, 2, -2, 2),
+		XMFLOAT3(0, 0.5f, 0),
+		device,
+		particleVS.get(),
+		particlePS.get(),
+		particleTexture));
 
 	collisionManeger = std::make_unique<CollisionManager>();
 }
@@ -324,6 +366,7 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 	
+	emitter->Update(deltaTime);
 }
 
 // --------------------------------------------------------
@@ -362,6 +405,17 @@ void Game::Draw(float deltaTime, float totalTime)
 			projectiles[i]->DrawObject(context.Get(), camera.get());
 		}
 	}
+
+	//Draw particles
+	context->OMSetBlendState(particleBlendState.Get(), 0, 0xffffffff);
+	context->OMSetDepthStencilState(particleDepthState.Get(), 0);
+
+	//draw all emitters here
+	emitter->Draw(context, camera.get());
+
+	//reset
+	context->OMSetBlendState(0, 0, 0xffffffff);
+	context->OMSetDepthStencilState(0, 0);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
