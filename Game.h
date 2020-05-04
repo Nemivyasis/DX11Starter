@@ -12,6 +12,7 @@
 #include "Lights.h"
 #include "Target.h"
 #include "Projectile.h"
+#include "Emitter.h"
 #include "CollisionManager.h"
 
 class Game 
@@ -55,8 +56,16 @@ private:
 	std::shared_ptr<SimpleVertexShader> vertexShader;
 	std::shared_ptr<SimplePixelShader> pixelShaderNormalMap;
 	std::shared_ptr<SimpleVertexShader> vertexShaderNormalMap;
+	std::shared_ptr<SimplePixelShader> particlePS;
+	std::shared_ptr<SimpleVertexShader> particleVS;
+
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> particleDepthState;
+	Microsoft::WRL::ComPtr<ID3D11BlendState> particleBlendState;
+	Microsoft::WRL::ComPtr<ID3D11RasterizerState> particleDebugRasterizerState;
 
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> particleTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cloverTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> targetTexture;
@@ -77,5 +86,8 @@ private:
 	std::shared_ptr<Material> cloverMat;
 
 	std::unique_ptr<CollisionManager> collisionManeger;
+
+	//emitters
+	std::unique_ptr<Emitter> emitter;
 };
 

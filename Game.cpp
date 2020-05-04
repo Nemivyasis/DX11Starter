@@ -85,6 +85,8 @@ void Game::Init()
 	// Keep track of projectiles on screen 
 	projectiles = std::vector < std::shared_ptr< Projectile >>();
 
+	//Make particle system
+
 
 	collisionManeger = std::make_unique<CollisionManager>();
 }
@@ -110,6 +112,18 @@ void Game::LoadShaders()
 
 	pixelShaderNormalMap = std::make_shared<SimplePixelShader>(device.Get(), context.Get(),
 		GetFullPathTo_Wide(L"PixelShaderNormal.cso").c_str());
+
+	particleVS = std::make_shared<SimpleVertexShader>(
+		device.Get(),
+		context.Get(),
+		GetFullPathTo_Wide(L"ParticleVS.cso").c_str());
+
+	particlePS = std::make_shared<SimplePixelShader>(
+		device.Get(),
+		context.Get(),
+		GetFullPathTo_Wide(L"ParticlePS.cso").c_str());
+		
+
 }
 
 
