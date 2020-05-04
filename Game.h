@@ -67,6 +67,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> particleTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cloverTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brassTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> targetTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTextureNMap;
 	Microsoft::WRL::ComPtr<ID3D11SamplerState> samplerState;
@@ -83,6 +84,7 @@ private:
 	std::shared_ptr<Mesh> sphereMesh;
 	// Projectile material
 	std::shared_ptr<Material> cloverMat;
+	std::shared_ptr<Material> brassMat;
 
 	std::unique_ptr<CollisionManager> collisionManeger;
 

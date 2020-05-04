@@ -8,16 +8,17 @@ Projectile::Projectile(std::shared_ptr<Mesh> meshptr, std::shared_ptr<Material> 
 	this->isDead = false;
 	SetPosition();
 	SetRotation();
+	GetTransform()->SetScale(0.01f, 0.01f, 0.01f);
 }
 
 void Projectile::Fire(float deltaTime)
 {
-	GetTransform()->MoveRelative(0, 0, speed*deltaTime);
+	GetTransform()->MoveRelative(0, 0, speed * deltaTime);
 }
 
 void Projectile::SetPosition()
 {
-	GetTransform()->SetPosition(camPos.x, camPos.y, camPos.z+3);
+	GetTransform()->SetPosition(camPos.x, camPos.y, camPos.z+0.25f);
 }
 
 DirectX::XMFLOAT3 Projectile::GetPosition()

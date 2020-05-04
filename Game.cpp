@@ -181,7 +181,7 @@ void Game::CreateBasicGeometry()
 	auto cylinderMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cylinder.obj").c_str(), device);
 	auto cubeMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device);
 	auto helixMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device);
-	sphereMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
+	sphereMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/bullet.obj").c_str(), device);
 
 	//Make Materials
 	/*auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f), 64, vertexShader, pixelShader);
@@ -191,8 +191,8 @@ void Game::CreateBasicGeometry()
 	auto whiteMaterial = std::make_shared<Material>(XMFLOAT4(1, 1, 1 , 1.0f), 64, vertexShader, pixelShader);*/
 
 	auto hResult = CreateWICTextureFromFile(device.Get(),
-		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/clover.jpg").c_str(),
-		nullptr, cloverTexture.GetAddressOf());
+		context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/brass.jpg").c_str(),
+		nullptr, brassTexture.GetAddressOf());
 
 
 	hResult = CreateWICTextureFromFile(device.Get(),
@@ -217,7 +217,7 @@ void Game::CreateBasicGeometry()
 	sampDescription.MaxLOD = D3D11_FLOAT32_MAX;
 	device->CreateSamplerState(&sampDescription, samplerState.GetAddressOf());
 
-	cloverMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 0, cloverTexture, samplerState, vertexShader, pixelShader);
+	brassMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 0, brassTexture, samplerState, vertexShader, pixelShader);
 	auto rockMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShader, pixelShader);
 	auto targetMat = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, targetTexture, samplerState, vertexShader, pixelShader);
 	auto rockMatNMap = std::make_shared<Material>(XMFLOAT4(1, 1, 1.0f, 1.0f), 64.0f, rockTexture, samplerState, vertexShaderNormalMap, pixelShaderNormalMap, rockTextureNMap);
@@ -315,7 +315,7 @@ void Game::Update(float deltaTime, float totalTime)
 		//printf("clicked");
 		projectiles.push_back(std::make_shared<Projectile>(
 			sphereMesh,
-			cloverMat,
+			brassMat,
 			10,
 			camera.get()->GetTransform()->GetPosition(),
 			camera.get()->GetTransform()->GetRotation())
