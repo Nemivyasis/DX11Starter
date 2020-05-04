@@ -360,7 +360,6 @@ DirectX::XMFLOAT3 Emitter::CalcParticleVertexPosition(int particleIndex, int qua
 	offsetVec = XMVector3Transform(offsetVec, rotationMatrix);
 
 	//Add and scale the camera up and right vectors to the position as needed
-	//This is how the particle gets billboarded
 	XMVECTOR positionVector = XMLoadFloat3(&particles[particleIndex].Position);
 	positionVector += camRight * XMVectorGetX(offsetVec) * particles[particleIndex].Size;
 	positionVector += camUp * XMVectorGetY(offsetVec) * particles[particleIndex].Size;
