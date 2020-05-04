@@ -88,5 +88,9 @@ private:
 
 	//emitters
 	std::unique_ptr<Emitter> emitter;
+
+	//variables for shooting logic
+	float fireRate;
+	float lastShot;
 };
 

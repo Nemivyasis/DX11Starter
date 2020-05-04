@@ -17,7 +17,7 @@ void Projectile::Fire(float deltaTime)
 
 void Projectile::SetPosition()
 {
-	GetTransform()->SetPosition(camPos.x, camPos.y, camPos.z);
+	GetTransform()->SetPosition(camPos.x, camPos.y, camPos.z+3);
 }
 
 DirectX::XMFLOAT3 Projectile::GetPosition()

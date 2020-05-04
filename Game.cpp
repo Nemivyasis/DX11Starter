@@ -131,6 +131,9 @@ void Game::Init()
 		particleTexture));
 
 	collisionManeger = std::make_unique<CollisionManager>();
+
+	fireRate = 0.5f;
+	lastShot = 1.0f;
 }
 
 // --------------------------------------------------------
@@ -306,8 +309,9 @@ void Game::Update(float deltaTime, float totalTime)
 	// -- SHOOTING --
 
 	// Check to see if right mouse button is down
-	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000)
+	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000 && lastShot > fireRate)
 	{
+		lastShot = 0;
 		//printf("clicked");
 		projectiles.push_back(std::make_shared<Projectile>(
 			sphereMesh,
@@ -318,6 +322,8 @@ void Game::Update(float deltaTime, float totalTime)
 		);
 		//collisionManeger->AddBullet(projectiles[projectiles.size() - 1]);
 	}
+
+	lastShot += deltaTime;
 
 	// move the projectiles 
 	if (projectiles.size() > 0)

@@ -75,7 +75,7 @@ void Camera::Update(float dt, HWND windowHandle)
 	GetCursorPos(&mousePos);
 	ScreenToClient(windowHandle, &mousePos);
 
-	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000) {
+	if (GetAsyncKeyState(VK_RBUTTON) & 0x8000) {
 		POINT moveDist = {};
 		moveDist.x = mousePos.x - prevMousePosition.x;
 		moveDist.y = mousePos.y - prevMousePosition.y;
