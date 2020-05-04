@@ -153,6 +153,35 @@ void Emitter::Update(float dt)
 
 void Emitter::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* camera)
 {
+	//Copy over the particles to GPU
+	CopyParticlesToGPU(context, camera);
+
+	//set up the buffers
+	UINT stride = sizeof(ParticleVertex);
+	UINT offset = 0;
+	context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
+	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
+	
+	//set the view and projection matrices and shaders
+	vs->SetMatrix4x4("view", camera->GetViewMatrix());
+	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
+	vs->SetShader();
+	vs->CopyAllBufferData();
+
+	ps->SetShaderResourceView("particle", texture.Get());
+	ps->SetShader();
+
+	//draw the alive parts, wrapping vs contiguous
+	if (firstAliveIndex < firstDeadIndex) { //contiguous
+		context->DrawIndexed(livingParticleCount * 6, firstAliveIndex * 6, 0);
+	}
+	else { //wrapping
+		//Draw 0 -> dead
+		context->DrawIndexed(firstDeadIndex * 6, 0, 0);
+
+		//Draw firstAlive -> end
+		context->DrawIndexed((maxParticles - firstAliveIndex) * 6, firstAliveIndex * 6, 0);
+	}
 }
 
 void Emitter::UpdateSingleParticle(float dt, int index)
