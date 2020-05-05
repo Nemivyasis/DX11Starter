@@ -8,7 +8,7 @@ Projectile::Projectile(std::shared_ptr<Mesh> meshptr, std::shared_ptr<Material> 
 	this->isDead = false;
 	SetPosition();
 	SetRotation();
-	GetTransform()->SetScale(0.01f, 0.01f, 0.01f);
+	//GetTransform()->SetScale(0.01f, 0.01f, 0.01f);
 }
 
 void Projectile::Fire(float deltaTime)

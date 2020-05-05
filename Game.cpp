@@ -181,7 +181,7 @@ void Game::CreateBasicGeometry()
 	auto cylinderMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cylinder.obj").c_str(), device);
 	auto cubeMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/cube.obj").c_str(), device);
 	auto helixMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/helix.obj").c_str(), device);
-	sphereMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/bullet.obj").c_str(), device);
+	sphereMesh = std::make_shared<Mesh>(GetFullPathTo("../../Assets/Models/sphere.obj").c_str(), device);
 
 	//Make Materials
 	/*auto redMaterial = std::make_shared<Material>(XMFLOAT4(1.0f, 0.1f, 0.1f, 1.0f), 64, vertexShader, pixelShader);
