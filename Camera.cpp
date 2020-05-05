@@ -100,11 +100,14 @@ void Camera::Update(float dt, HWND windowHandle)
 		moveDist.x = mousePos.x - prevMousePosition.x;
 		moveDist.y = mousePos.y - prevMousePosition.y;
 		
+		// check to see if actually rotating (don't want to blur when just holding down the mouse)
+		if (mousePos.x != prevMousePosition.x || mousePos.y != prevMousePosition.y) {
+			didCameraChange = true;
+		}
+
 		float xRot = (moveDist.x * mouseLookSpeed);
 		float yRot = (moveDist.y * mouseLookSpeed);
 		transform->Rotate(yRot, xRot, 0);
-
-		didCameraChange = true;
 	}
 
 	prevMousePosition = mousePos;
