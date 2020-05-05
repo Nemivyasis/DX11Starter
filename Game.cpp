@@ -372,11 +372,10 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000 && lastShot > fireRate)
 	{
 		lastShot = 0;
-		//printf("clicked");
 		projectiles.push_back(std::make_shared<Projectile>(
 			sphereMesh,
 			brassMat,
-			10,
+			30,
 			camera.get()->GetTransform()->GetPosition(),
 			camera.get()->GetTransform()->GetRotation())
 		);
