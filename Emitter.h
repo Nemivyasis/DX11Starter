@@ -109,9 +109,6 @@ private:
 	int firstDeadIndex;
 	int firstAliveIndex;
 
-	//keep track of first one for oneshots
-	int firstActiveForOneShot;
-
 	// Rendering
 	ParticleVertex* localParticleVertices;
 	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
