@@ -5,7 +5,6 @@ cbuffer externalData : register(b0)
 	int blurAmount;
 }
 
-
 // Defines the input to this pixel shader
 struct VertexToPixel
 {
@@ -17,7 +16,7 @@ struct VertexToPixel
 Texture2D pixels			: register(t0);
 SamplerState samplerOptions	: register(s0);
 
-float4 main() : SV_TARGET
+float4 main(VertexToPixel input) : SV_TARGET
 {
 	float4 totalColor = float4(0,0,0,0);
 	uint numSamples = 0;

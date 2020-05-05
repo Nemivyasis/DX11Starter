@@ -5,7 +5,7 @@ struct VertexToPixel
 	float2 uv           : TEXCOORD0;
 };
 
-float4 main(uint id : SV_VertexID)
+VertexToPixel main(uint id : SV_VertexID)
 {
 	// Set up output
 	VertexToPixel output;

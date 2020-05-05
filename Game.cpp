@@ -173,15 +173,15 @@ void Game::LoadShaders()
 		GetFullPathTo_Wide(L"ParticlePS.cso").c_str());
 		
 	//********Post Processing *****************
-	//ppVS = new SimpleVertexShader(
-	//	device.Get(),
-	//	context.Get(),
-	//	GetFullPathTo_Wide(L"PostProcessVS.cso").c_str());
+	ppVS = new SimpleVertexShader(
+		device.Get(),
+		context.Get(),
+		GetFullPathTo_Wide(L"PostProcessVS.cso").c_str());
 
-	//ppPS = new SimplePixelShader(
-	//	device.Get(),
-	//	context.Get(),
-	//	GetFullPathTo_Wide(L"PostProcessPS.cso").c_str());
+	ppPS = new SimplePixelShader(
+		device.Get(),
+		context.Get(),
+		GetFullPathTo_Wide(L"PostProcessPS.cso").c_str());
 
 }
 
@@ -454,7 +454,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	// Change the render target
 	//********Post Processing *****************
-	//context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthStencilView.Get());
+	context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthStencilView.Get());
 
 	//Set lighting
 	SetGlobalPixelShaderInfo(pixelShader);
@@ -488,33 +488,33 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), 0);
 
-	//********Post Processing *****************
+	//******** Post Processing *****************
 
-	//ppVS->SetShader();
+	ppVS->SetShader();
 
-	//ppPS->SetShaderResourceView("pixels", ppSRV.Get());
-	//ppPS->SetSamplerState("samplerOptions", samplerState.Get());
-	//ppPS->SetInt("blurAmount", 3);
-	//ppPS->SetShader();
+	ppPS->SetShaderResourceView("pixels", ppSRV.Get());
+	ppPS->SetSamplerState("samplerOptions", samplerState.Get());
+	ppPS->SetInt("blurAmount", 3);
+	ppPS->SetShader();
 
-	//ppPS->SetFloat("pixelWidth", 1.0f / width);
-	//ppPS->SetFloat("pixelHeight", 1.0f / height);
-	//ppPS->CopyAllBufferData();
+	ppPS->SetFloat("pixelWidth", 1.0f / width);
+	ppPS->SetFloat("pixelHeight", 1.0f / height);
+	ppPS->CopyAllBufferData();
 
 	//// Turn OFF buffers
-	//UINT stride = sizeof(Vertex);
-	//UINT offset = 0;
-	//ID3D11Buffer* empty = 0;
-	//context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
-	//context->IASetVertexBuffers(0, 1, &empty, &stride, &offset);
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	ID3D11Buffer* empty = 0;
+	context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	context->IASetVertexBuffers(0, 1, &empty, &stride, &offset);
 
 	// Make big triangle
 	context->Draw(3, 0);
 
 	//Unbind Shader View
 	//********Post Processing *****************
-	//ID3D11ShaderResourceView* nullSRVs[16] = {};
-	//context->PSSetShaderResources(0, 16, nullSRVs);
+	ID3D11ShaderResourceView* nullSRVs[16] = {};
+	context->PSSetShaderResources(0, 16, nullSRVs);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it
