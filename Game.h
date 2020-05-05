@@ -99,7 +99,7 @@ private:
 	// Post processing resources
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> blurRTV;		// Allows us to render to a texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;		// Allows us to sample from the same texture
-	SimpleVertexShader* ppVS;
-	SimplePixelShader* ppPS;
+	std::shared_ptr<SimpleVertexShader> ppVS;
+	std::shared_ptr<SimplePixelShader> ppPS;
 };
 
