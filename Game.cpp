@@ -173,12 +173,12 @@ void Game::LoadShaders()
 		GetFullPathTo_Wide(L"ParticlePS.cso").c_str());
 		
 	//********Post Processing *****************
-	ppVS = new SimpleVertexShader(
+	ppVS = std::make_shared<SimpleVertexShader>(
 		device.Get(),
 		context.Get(),
 		GetFullPathTo_Wide(L"PostProcessVS.cso").c_str());
 
-	ppPS = new SimplePixelShader(
+	ppPS = std::make_shared<SimplePixelShader>(
 		device.Get(),
 		context.Get(),
 		GetFullPathTo_Wide(L"PostProcessPS.cso").c_str());
