@@ -85,6 +85,9 @@ void Game::Init()
 	// Keep track of projectiles on screen 
 	projectiles = std::vector < std::shared_ptr< Projectile >>();
 
+	// init blur amount and camera position
+	blurAmount = 0;
+
 	//Make particle system
 	//getTexture
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/particle.jpg").c_str(), 0, particleTexture.GetAddressOf());
@@ -111,27 +114,6 @@ void Game::Init()
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	device->CreateBlendState(&blendDesc, particleBlendState.GetAddressOf());
 
-	//Set up actual emitter
-	emitter = std::unique_ptr<Emitter>(new Emitter(
-		111,
-		10,
-		6,
-		0.1f,
-		1.0f,
-		XMFLOAT4(0.6f, 0.2f, 0.2f, 1),
-		XMFLOAT4(0.3f, 0.3f, 0.3f, 0),
-		XMFLOAT3(0, -0.5f, 0),
-		XMFLOAT3(0.2f, 0.1f, 0.2f),
-		XMFLOAT3(0, 4, 0),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		XMFLOAT4(-2, 2, -2, 2),
-		XMFLOAT3(0, 0.5f, 0),
-		device,
-		particleVS.get(),
-		particlePS.get(),
-		particleTexture,
-		false,
-		true));
 
 	gunfire_emitter = std::unique_ptr<Emitter>(new Emitter(
 		10,
@@ -392,11 +374,10 @@ void Game::Update(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_LBUTTON) & 0x8000 && lastShot > fireRate)
 	{
 		lastShot = 0;
-		//printf("clicked");
 		projectiles.push_back(std::make_shared<Projectile>(
 			sphereMesh,
 			brassMat,
-			10,
+			30,
 			camera.get()->GetTransform()->GetPosition(),
 			camera.get()->GetTransform()->GetRotation())
 		);
@@ -451,13 +432,62 @@ void Game::Update(float deltaTime, float totalTime)
 	if (!targets.empty()) {
 		for (int i = targets.size() - 1; i >= 0; i--) {
 			if (targets[i]->isDead) {
+				//set an emitter onto the target
+				bool makeNew = true;
+				for (int j = 0; j < hitEmitters.size(); j++)
+				{
+					if (!hitEmitters[j]->IsActive()) {
+						hitEmitters[j]->SetEmitterPosition(targets[i]->GetTransform()->GetPosition());
+						hitEmitters[j]->SetActive(true);
+						makeNew = false;
+						break;
+					}
+				}
+
+				if (makeNew) {
+					//Set up actual emitter
+					hitEmitters.push_back(std::unique_ptr<Emitter>(new Emitter(
+						10,
+						4000,
+						0.5f,
+						1.0f,
+						0.25f,
+						XMFLOAT4(0.6f, 0.2f, 0.2f, 0.75),
+						XMFLOAT4(0.3f, 0.3f, 0.3f, 0),
+						XMFLOAT3(0, 0, 0),
+						XMFLOAT3(2, 2, 2),
+						targets[i]->GetTransform()->GetPosition(),
+						XMFLOAT3(0.0f, 0.0f, 0.0f),
+						XMFLOAT4(-2, 2, -2, 2),
+						XMFLOAT3(0, 0.5f, 0),
+						device,
+						particleVS.get(),
+						particlePS.get(),
+						particleTexture,
+						true,
+						true)));
+				}
+
 				targets.erase(targets.begin() + i);
 			}
 		}
 	}
+
+
+	// decide the blur amount
+	// changes depending on if the camera is moving
+	if (camera.get()->GetDidCameraChange()) {
+		blurAmount = 7;
+	}
+	else {
+		blurAmount = 0;
+	}
 	
-	emitter->Update(deltaTime);
 	gunfire_emitter->Update(deltaTime);
+	for (int i = 0; i < hitEmitters.size(); i++)
+	{
+		hitEmitters[i]->Update(deltaTime);
+	}
 }
 
 // --------------------------------------------------------
@@ -508,8 +538,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->OMSetDepthStencilState(particleDepthState.Get(), 0);
 
 	//draw all emitters here
-	emitter->Draw(context, camera.get());
 	gunfire_emitter->Draw(context, camera.get());
+	for (int i = 0; i < hitEmitters.size(); i++)
+	{
+		hitEmitters[i]->Draw(context, camera.get());
+	}
 
 	//reset
 	context->OMSetBlendState(0, 0, 0xffffffff);
@@ -523,9 +556,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	ppPS->SetShaderResourceView("pixels", ppSRV.Get());
 	ppPS->SetSamplerState("samplerOptions", samplerState.Get());
-
-	// changes depending on if the camera is moving
-	ppPS->SetInt("blurAmount", 3);
+	ppPS->SetInt("blurAmount", blurAmount);
 	ppPS->SetShader();
 
 	ppPS->SetFloat("pixelWidth", 1.0f / width);

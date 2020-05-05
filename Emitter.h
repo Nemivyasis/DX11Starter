@@ -57,6 +57,7 @@ public:
 
 	~Emitter();
 
+	void SetEmitterPosition(DirectX::XMFLOAT3 newPos);
 	void Update(float dt);
 	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* camera);
 
@@ -107,6 +108,9 @@ private:
 	int maxParticles;
 	int firstDeadIndex;
 	int firstAliveIndex;
+
+	//keep track of first one for oneshots
+	int firstActiveForOneShot;
 
 	// Rendering
 	ParticleVertex* localParticleVertices;

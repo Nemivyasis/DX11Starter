@@ -91,12 +91,15 @@ private:
 	std::unique_ptr<CollisionManager> collisionManeger;
 
 	//emitters
-	std::unique_ptr<Emitter> emitter;
+	std::vector<std::unique_ptr<Emitter>> hitEmitters;
 	std::unique_ptr<Emitter> gunfire_emitter;
 
 	//variables for shooting logic
 	float fireRate;
 	float lastShot;
+
+	// blur value
+	int blurAmount;
 
 	// Post processing resources
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> blurRTV;		// Allows us to render to a texture

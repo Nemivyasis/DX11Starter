@@ -3,7 +3,7 @@ using namespace DirectX;
 
 Camera::Camera(float aspectRatio)
 {
-	SetAllCustomOptions(XM_PIDIV4, .01f, 500, 1, 3, .005f);
+	SetAllCustomOptions(XM_PIDIV4, .01f, 500, 10, 30, .005f);
 	CreateTransform(XMFLOAT3(0, 0, -10), XMFLOAT3(0, 0, 0));
 	UpdateProjectionMatrix(aspectRatio);
 	UpdateViewMatrix();
@@ -51,6 +51,8 @@ void Camera::UpdateViewMatrix()
 
 void Camera::Update(float dt, HWND windowHandle)
 {
+	didCameraChange = false;
+
 	//choose the move speed
 	float currentMoveSpeed = moveSpeed;
 	if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
@@ -58,17 +60,35 @@ void Camera::Update(float dt, HWND windowHandle)
 
 	//Update move
 	if (GetAsyncKeyState('W') & 0x8000)
+	{
 		transform->MoveRelative(0, 0, currentMoveSpeed * dt);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('S') & 0x8000)
+	{
 		transform->MoveRelative(0, 0, -currentMoveSpeed * dt);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('A') & 0x8000)
+	{
 		transform->MoveRelative(-currentMoveSpeed * dt, 0, 0);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('D') & 0x8000)
+	{
 		transform->MoveRelative(currentMoveSpeed * dt, 0, 0);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	{
 		transform->MoveAbsolute(0, currentMoveSpeed * dt, 0);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('X') & 0x8000)
+	{
 		transform->MoveAbsolute(0, -currentMoveSpeed * dt, 0);
+		didCameraChange = true;
+	}
 
 	//mouse stuff
 	POINT mousePos = {};
@@ -80,6 +100,11 @@ void Camera::Update(float dt, HWND windowHandle)
 		moveDist.x = mousePos.x - prevMousePosition.x;
 		moveDist.y = mousePos.y - prevMousePosition.y;
 		
+		// check to see if actually rotating (don't want to blur when just holding down the mouse)
+		if (mousePos.x != prevMousePosition.x || mousePos.y != prevMousePosition.y) {
+			didCameraChange = true;
+		}
+
 		float xRot = (moveDist.x * mouseLookSpeed);
 		float yRot = (moveDist.y * mouseLookSpeed);
 		transform->Rotate(yRot, xRot, 0);
@@ -88,6 +113,11 @@ void Camera::Update(float dt, HWND windowHandle)
 	prevMousePosition = mousePos;
 
 	UpdateViewMatrix();
+}
+
+bool Camera::GetDidCameraChange()
+{
+	return true;
 }
 
 void Camera::SetAllCustomOptions(float fieldView, float nearClp, float farClp, float moveSpd, float fastMoveSpd, float mouseLookSpd)
