@@ -19,6 +19,7 @@ VertexToPixel main(uint id : SV_VertexID)
 	output.position = float4(output.uv, 0, 1);
 	output.position.x = output.position.x * 2 - 1;
 	output.position.y = output.position.y * -2 + 1;
+	output.position.z = output.position.y * 0.5+0.5;
 
 	return output;
 }
