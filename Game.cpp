@@ -85,6 +85,10 @@ void Game::Init()
 	// Keep track of projectiles on screen 
 	projectiles = std::vector < std::shared_ptr< Projectile >>();
 
+	// init blur amount and camera position
+	blurAmount = 0;
+	lastCameraPos = camera.get()->GetTransform();
+
 	//Make particle system
 	//getTexture
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/particle.jpg").c_str(), 0, particleTexture.GetAddressOf());
@@ -428,6 +432,26 @@ void Game::Update(float deltaTime, float totalTime)
 			}
 		}
 	}
+
+	std::cout << "Current pos: " << camera.get()->GetTransform()->GetPosition().x << " " 
+		<< camera.get()->GetTransform()->GetPosition().y << " " 
+		<< camera.get()->GetTransform()->GetPosition().z << endl;
+
+	std::cout << "Last pos: " << lastCameraPos->GetPosition().x << " "
+		<< lastCameraPos->GetPosition().y << " "
+		<< lastCameraPos->GetPosition().z << endl;
+
+
+	// decide the blur amount
+	// changes depending on if the camera is moving
+	if (camera.get()->GetTransform() != lastCameraPos) {
+		blurAmount = 3;
+	}
+	else {
+		blurAmount = 0;
+	}
+
+	lastCameraPos = camera.get()->GetTransform();
 	
 	emitter->Update(deltaTime);
 }
@@ -494,9 +518,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	ppPS->SetShaderResourceView("pixels", ppSRV.Get());
 	ppPS->SetSamplerState("samplerOptions", samplerState.Get());
-
-	// changes depending on if the camera is moving
-	ppPS->SetInt("blurAmount", 3);
+	ppPS->SetInt("blurAmount", blurAmount);
 	ppPS->SetShader();
 
 	ppPS->SetFloat("pixelWidth", 1.0f / width);

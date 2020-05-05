@@ -96,6 +96,12 @@ private:
 	float fireRate;
 	float lastShot;
 
+	// for checking if the camera is moving
+	Transform* lastCameraPos;
+
+	// blur value
+	int blurAmount;
+
 	// Post processing resources
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> blurRTV;		// Allows us to render to a texture
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;		// Allows us to sample from the same texture
