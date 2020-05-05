@@ -134,6 +134,8 @@ void Game::Init()
 
 	fireRate = 0.5f;
 	lastShot = 1.0f;
+
+	ResizePostProcessResources();
 }
 
 // --------------------------------------------------------
@@ -168,6 +170,16 @@ void Game::LoadShaders()
 		context.Get(),
 		GetFullPathTo_Wide(L"ParticlePS.cso").c_str());
 		
+	//********Post Processing *****************
+	//ppVS = new SimpleVertexShader(
+	//	device.Get(),
+	//	context.Get(),
+	//	GetFullPathTo_Wide(L"PostProcessVS.cso").c_str());
+
+	//ppPS = new SimplePixelShader(
+	//	device.Get(),
+	//	context.Get(),
+	//	GetFullPathTo_Wide(L"PostProcessPS.cso").c_str());
 
 }
 
@@ -287,6 +299,49 @@ void Game::OnResize()
 	if (camera != nullptr) {
 		camera->UpdateProjectionMatrix((float)this->width / this->height);
 	}
+
+	ResizePostProcessResources();
+}
+
+
+//Creates and resizes the triangle for Post Processing
+void Game::ResizePostProcessResources()
+{
+	D3D11_TEXTURE2D_DESC textureDesc = {};
+	textureDesc.Width = width;
+	textureDesc.Height = height;
+	textureDesc.ArraySize = 1;
+	textureDesc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE; // Will render to it and sample from it!
+	textureDesc.CPUAccessFlags = 0;
+	textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	textureDesc.MipLevels = 1;
+	textureDesc.MiscFlags = 0;
+	textureDesc.SampleDesc.Count = 1;
+	textureDesc.SampleDesc.Quality = 0;
+	textureDesc.Usage = D3D11_USAGE_DEFAULT;
+
+	ID3D11Texture2D* ppTexture;
+	device->CreateTexture2D(&textureDesc, 0, &ppTexture);
+
+	// Create the Render Target View
+	D3D11_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.Format = textureDesc.Format;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	device->CreateRenderTargetView(ppTexture, &rtvDesc, blurRTV.ReleaseAndGetAddressOf());
+
+	// Create the Shader Resource View
+	D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.Format = textureDesc.Format;
+	srvDesc.Texture2D.MipLevels = 1;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+
+	device->CreateShaderResourceView(ppTexture, &srvDesc, ppSRV.ReleaseAndGetAddressOf());
+
+	// We don't need the texture reference itself no mo'
+	ppTexture->Release();
 }
 
 // --------------------------------------------------------
@@ -393,6 +448,12 @@ void Game::Draw(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
+	context->ClearRenderTargetView(blurRTV.Get(), color);
+
+	// Change the render target
+	//********Post Processing *****************
+	//context->OMSetRenderTargets(1, blurRTV.GetAddressOf(), depthStencilView.Get());
+
 	//Set lighting
 	SetGlobalPixelShaderInfo(pixelShader);
 	SetGlobalPixelShaderInfo(pixelShaderNormalMap);
@@ -422,6 +483,36 @@ void Game::Draw(float deltaTime, float totalTime)
 	//reset
 	context->OMSetBlendState(0, 0, 0xffffffff);
 	context->OMSetDepthStencilState(0, 0);
+
+	context->OMSetRenderTargets(1, backBufferRTV.GetAddressOf(), 0);
+
+	//********Post Processing *****************
+
+	//ppVS->SetShader();
+
+	//ppPS->SetShaderResourceView("pixels", ppSRV.Get());
+	//ppPS->SetSamplerState("samplerOptions", samplerState.Get());
+	//ppPS->SetInt("blurAmount", 3);
+	//ppPS->SetShader();
+
+	//ppPS->SetFloat("pixelWidth", 1.0f / width);
+	//ppPS->SetFloat("pixelHeight", 1.0f / height);
+	//ppPS->CopyAllBufferData();
+
+	//// Turn OFF buffers
+	//UINT stride = sizeof(Vertex);
+	//UINT offset = 0;
+	//ID3D11Buffer* empty = 0;
+	//context->IASetIndexBuffer(0, DXGI_FORMAT_R32_UINT, 0);
+	//context->IASetVertexBuffers(0, 1, &empty, &stride, &offset);
+
+	// Make big triangle
+	context->Draw(3, 0);
+
+	//Unbind Shader View
+	//********Post Processing *****************
+	//ID3D11ShaderResourceView* nullSRVs[16] = {};
+	//context->PSSetShaderResources(0, 16, nullSRVs);
 
 	// Present the back buffer to the user
 	//  - Puts the final frame we're drawing into the window so the user can see it

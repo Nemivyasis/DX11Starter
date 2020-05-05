@@ -36,6 +36,7 @@ private:
 	// Initialization helper methods - feel free to customize, combine, etc.
 	void LoadShaders(); 
 	void CreateBasicGeometry();
+	void ResizePostProcessResources();
 	std::shared_ptr<Mesh> MakeSquare(float centerX, float centerY, float sideSize);
 
 	std::shared_ptr<Mesh> MakePolygon(int numSides, float centerX, float centerY, float radius);
@@ -94,5 +95,11 @@ private:
 	//variables for shooting logic
 	float fireRate;
 	float lastShot;
+
+	// Post processing resources
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> blurRTV;		// Allows us to render to a texture
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> ppSRV;		// Allows us to sample from the same texture
+	SimpleVertexShader* ppVS;
+	SimplePixelShader* ppPS;
 };
 
