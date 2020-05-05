@@ -482,7 +482,7 @@ void Game::Update(float deltaTime, float totalTime)
 	else {
 		blurAmount = 0;
 	}
-
+	
 	gunfire_emitter->Update(deltaTime);
 	for (int i = 0; i < hitEmitters.size(); i++)
 	{

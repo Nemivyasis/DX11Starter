@@ -61,7 +61,6 @@ Emitter::Emitter(
 	firstAliveIndex = 0;
 	firstDeadIndex = 0;
 
-	firstActiveForOneShot = maxParticles - 1;
 
 	particles = new Particle[maxParticles];
 	ZeroMemory(particles, sizeof(Particle) * maxParticles);
@@ -165,11 +164,6 @@ void Emitter::Update(float dt)
 	// Enough time to emit?
 	while (timeSinceEmit > secondsPerParticle)
 	{
-		//It caused a bug so I commented it out, and it seems it does not affect anything
-
-		/*if (isOneShot && firstDeadIndex == firstActiveForOneShot)
-			isActive = false;*/
-
 		SpawnParticle();
 		timeSinceEmit -= secondsPerParticle;
 	}
@@ -215,14 +209,6 @@ bool Emitter::IsActive()
 
 void Emitter::SetActive(bool newState)
 {
-	//if one shot and being set active, remember starting particle
-	if (isOneShot && newState == true)
-	{
-		if(firstDeadIndex != 0)
-			firstActiveForOneShot = firstDeadIndex - 1;
-		firstActiveForOneShot = maxParticles - 1;
-	}
-
 	isActive = newState;
 }
 
