@@ -87,7 +87,6 @@ void Game::Init()
 
 	// init blur amount and camera position
 	blurAmount = 0;
-	lastCameraPos = camera.get()->GetTransform();
 
 	//Make particle system
 	//getTexture
@@ -433,25 +432,15 @@ void Game::Update(float deltaTime, float totalTime)
 		}
 	}
 
-	std::cout << "Current pos: " << camera.get()->GetTransform()->GetPosition().x << " " 
-		<< camera.get()->GetTransform()->GetPosition().y << " " 
-		<< camera.get()->GetTransform()->GetPosition().z << endl;
-
-	std::cout << "Last pos: " << lastCameraPos->GetPosition().x << " "
-		<< lastCameraPos->GetPosition().y << " "
-		<< lastCameraPos->GetPosition().z << endl;
-
 
 	// decide the blur amount
 	// changes depending on if the camera is moving
-	if (camera.get()->GetTransform() != lastCameraPos) {
+	if (camera.get()->GetDidCameraChange()) {
 		blurAmount = 3;
 	}
 	else {
 		blurAmount = 0;
 	}
-
-	lastCameraPos = camera.get()->GetTransform();
 	
 	emitter->Update(deltaTime);
 }

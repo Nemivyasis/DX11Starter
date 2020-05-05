@@ -96,9 +96,6 @@ private:
 	float fireRate;
 	float lastShot;
 
-	// for checking if the camera is moving
-	Transform* lastCameraPos;
-
 	// blur value
 	int blurAmount;
 

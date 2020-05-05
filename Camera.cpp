@@ -51,6 +51,8 @@ void Camera::UpdateViewMatrix()
 
 void Camera::Update(float dt, HWND windowHandle)
 {
+	didCameraChange = false;
+
 	//choose the move speed
 	float currentMoveSpeed = moveSpeed;
 	if (GetAsyncKeyState(VK_SHIFT) & 0x8000)
@@ -58,17 +60,35 @@ void Camera::Update(float dt, HWND windowHandle)
 
 	//Update move
 	if (GetAsyncKeyState('W') & 0x8000)
+	{
 		transform->MoveRelative(0, 0, currentMoveSpeed * dt);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('S') & 0x8000)
+	{
 		transform->MoveRelative(0, 0, -currentMoveSpeed * dt);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('A') & 0x8000)
+	{
 		transform->MoveRelative(-currentMoveSpeed * dt, 0, 0);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('D') & 0x8000)
+	{
 		transform->MoveRelative(currentMoveSpeed * dt, 0, 0);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	{
 		transform->MoveAbsolute(0, currentMoveSpeed * dt, 0);
+		didCameraChange = true;
+	}
 	if (GetAsyncKeyState('X') & 0x8000)
+	{
 		transform->MoveAbsolute(0, -currentMoveSpeed * dt, 0);
+		didCameraChange = true;
+	}
 
 	//mouse stuff
 	POINT mousePos = {};
@@ -83,11 +103,18 @@ void Camera::Update(float dt, HWND windowHandle)
 		float xRot = (moveDist.x * mouseLookSpeed);
 		float yRot = (moveDist.y * mouseLookSpeed);
 		transform->Rotate(yRot, xRot, 0);
+
+		didCameraChange = true;
 	}
 
 	prevMousePosition = mousePos;
 
 	UpdateViewMatrix();
+}
+
+bool Camera::GetDidCameraChange()
+{
+	return didCameraChange;
 }
 
 void Camera::SetAllCustomOptions(float fieldView, float nearClp, float farClp, float moveSpd, float fastMoveSpd, float mouseLookSpd)

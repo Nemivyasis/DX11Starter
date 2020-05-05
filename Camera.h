@@ -21,6 +21,8 @@ public:
 	void UpdateProjectionMatrix(float aspectRatio);
 	void UpdateViewMatrix();
 	void Update(float dt, HWND windowHandle);
+
+	bool GetDidCameraChange();
 private:
 	std::unique_ptr<Transform> transform;
 
@@ -35,6 +37,9 @@ private:
 	float moveSpeed;
 	float fastMoveSpeed;
 	float mouseLookSpeed;
+
+	// check if camera moved
+	bool didCameraChange = false;
 
 	void SetAllCustomOptions(float fieldView, float nearClp, float farClp,
 		float moveSpd, float fastMoveSpd, float mouseLookSpd);
