@@ -494,6 +494,8 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	ppPS->SetShaderResourceView("pixels", ppSRV.Get());
 	ppPS->SetSamplerState("samplerOptions", samplerState.Get());
+
+	// changes depending on if the camera is moving
 	ppPS->SetInt("blurAmount", 3);
 	ppPS->SetShader();
 
@@ -512,7 +514,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->Draw(3, 0);
 
 	//Unbind Shader View
-	//********Post Processing *****************
+	//******** Post Processing *****************
 	ID3D11ShaderResourceView* nullSRVs[16] = {};
 	context->PSSetShaderResources(0, 16, nullSRVs);
 
