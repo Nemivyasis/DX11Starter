@@ -90,7 +90,7 @@ private:
 	std::unique_ptr<CollisionManager> collisionManeger;
 
 	//emitters
-	std::unique_ptr<Emitter> emitter;
+	std::vector<std::unique_ptr<Emitter>> hitEmitters;
 
 	//variables for shooting logic
 	float fireRate;

@@ -113,27 +113,7 @@ void Game::Init()
 	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 	device->CreateBlendState(&blendDesc, particleBlendState.GetAddressOf());
 
-	//Set up actual emitter
-	emitter = std::unique_ptr<Emitter>(new Emitter(
-		111,
-		10,
-		6,
-		0.1f,
-		1.0f,
-		XMFLOAT4(0.6f, 0.2f, 0.2f, 1),
-		XMFLOAT4(0.3f, 0.3f, 0.3f, 0),
-		XMFLOAT3(0, -0.5f, 0),
-		XMFLOAT3(0.2f, 0.1f, 0.2f),
-		XMFLOAT3(0, 4, 0),
-		XMFLOAT3(0.1f, 0.1f, 0.1f),
-		XMFLOAT4(-2, 2, -2, 2),
-		XMFLOAT3(0, 0.5f, 0),
-		device,
-		particleVS.get(),
-		particlePS.get(),
-		particleTexture,
-		false,
-		true));
+
 
 	collisionManeger = std::make_unique<CollisionManager>();
 
@@ -426,6 +406,42 @@ void Game::Update(float deltaTime, float totalTime)
 	if (!targets.empty()) {
 		for (int i = targets.size() - 1; i >= 0; i--) {
 			if (targets[i]->isDead) {
+				//set an emitter onto the target
+				bool makeNew = true;
+				for (int j = 0; j < hitEmitters.size(); j++)
+				{
+					if (!hitEmitters[j]->IsActive()) {
+						hitEmitters[j]->SetEmitterPosition(targets[i]->GetTransform()->GetPosition());
+						hitEmitters[j]->SetActive(true);
+						makeNew = false;
+						break;
+					}
+				}
+
+				if (makeNew) {
+					//Set up actual emitter
+					hitEmitters.push_back(std::unique_ptr<Emitter>(new Emitter(
+						10,
+						4000,
+						0.5f,
+						1.0f,
+						0.25f,
+						XMFLOAT4(0.6f, 0.2f, 0.2f, 0.75),
+						XMFLOAT4(0.3f, 0.3f, 0.3f, 0),
+						XMFLOAT3(0, 0, 0),
+						XMFLOAT3(2, 2, 2),
+						targets[i]->GetTransform()->GetPosition(),
+						XMFLOAT3(0.0f, 0.0f, 0.0f),
+						XMFLOAT4(-2, 2, -2, 2),
+						XMFLOAT3(0, 0.5f, 0),
+						device,
+						particleVS.get(),
+						particlePS.get(),
+						particleTexture,
+						true,
+						true)));
+				}
+
 				targets.erase(targets.begin() + i);
 			}
 		}
@@ -441,7 +457,10 @@ void Game::Update(float deltaTime, float totalTime)
 		blurAmount = 0;
 	}
 	
-	emitter->Update(deltaTime);
+	for (int i = 0; i < hitEmitters.size(); i++)
+	{
+		hitEmitters[i]->Update(deltaTime);
+	}
 }
 
 // --------------------------------------------------------
@@ -492,7 +511,10 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->OMSetDepthStencilState(particleDepthState.Get(), 0);
 
 	//draw all emitters here
-	emitter->Draw(context, camera.get());
+	for (int i = 0; i < hitEmitters.size(); i++)
+	{
+		hitEmitters[i]->Draw(context, camera.get());
+	}
 
 	//reset
 	context->OMSetBlendState(0, 0, 0xffffffff);
