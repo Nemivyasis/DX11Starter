@@ -117,7 +117,7 @@ void Camera::Update(float dt, HWND windowHandle)
 
 bool Camera::GetDidCameraChange()
 {
-	return didCameraChange;
+	return true;
 }
 
 void Camera::SetAllCustomOptions(float fieldView, float nearClp, float farClp, float moveSpd, float fastMoveSpd, float mouseLookSpd)

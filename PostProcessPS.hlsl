@@ -21,15 +21,12 @@ float4 main(VertexToPixel input) : SV_TARGET
 	float4 totalColor = float4(0,0,0,0);
 	uint numSamples = 0;
 
-	for (int y = -blurAmount; y <= blurAmount; y++)
+	for (int x = -blurAmount; x <= blurAmount; x++)
 	{
-		for (int x = -blurAmount; x <= blurAmount; x++)
-		{
-			float2 uv = input.uv + float2(x * pixelWidth, y * pixelHeight);
-			totalColor += pixels.Sample(samplerOptions, uv);
+		float2 uv = input.uv + float2(x * pixelWidth * input.position.z, 0);
+		totalColor += pixels.Sample(samplerOptions, uv);
 
-			numSamples++;
-		}
+		numSamples++;
 	}
 
 	return totalColor / numSamples;

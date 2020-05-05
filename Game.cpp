@@ -451,7 +451,7 @@ void Game::Update(float deltaTime, float totalTime)
 	// decide the blur amount
 	// changes depending on if the camera is moving
 	if (camera.get()->GetDidCameraChange()) {
-		blurAmount = 3;
+		blurAmount = 7;
 	}
 	else {
 		blurAmount = 0;
