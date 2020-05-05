@@ -483,11 +483,7 @@ void Game::Update(float deltaTime, float totalTime)
 		blurAmount = 0;
 	}
 	
-	gunfire_emitter->Update(deltaTime);
-	for (int i = 0; i < hitEmitters.size(); i++)
-	{
-		hitEmitters[i]->Update(deltaTime);
-	}
+	emitter->Update(deltaTime);
 }
 
 // --------------------------------------------------------
@@ -538,11 +534,7 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->OMSetDepthStencilState(particleDepthState.Get(), 0);
 
 	//draw all emitters here
-	gunfire_emitter->Draw(context, camera.get());
-	for (int i = 0; i < hitEmitters.size(); i++)
-	{
-		hitEmitters[i]->Draw(context, camera.get());
-	}
+	emitter->Draw(context, camera.get());
 
 	//reset
 	context->OMSetBlendState(0, 0, 0xffffffff);
