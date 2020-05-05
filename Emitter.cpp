@@ -300,17 +300,17 @@ void Emitter::CopyParticlesToGPU(Microsoft::WRL::ComPtr<ID3D11DeviceContext> con
 	//Check to see if the buffer is contiguous or wrapping
 	if (firstAliveIndex < firstDeadIndex) // contiguous
 	{
-		for (int i = firstAliveIndex + 1; i < firstDeadIndex; i++)
+		for (int i = firstAliveIndex; i < firstDeadIndex; i++)
 			CopyOneParticle(i, camera);
 	}
 	else //wrapping
 	{
 		//Update the first half from 0 to the first dead particle
-		for (int i = 1; i < firstDeadIndex; i++)
+		for (int i = 0; i < firstDeadIndex; i++)
 			CopyOneParticle(i, camera);
 
 		//Copy second half from first alive to end
-		for (int i = firstAliveIndex + 1; i < maxParticles; i++)
+		for (int i = firstAliveIndex; i < maxParticles; i++)
 			CopyOneParticle(i, camera);
 	}
 
