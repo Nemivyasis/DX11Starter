@@ -29,7 +29,7 @@ void Target::Update(float deltaTime) {
     float distance = Distance(origin, GetTransform()->GetPosition());
 
     //if the target has hit the end of the "track", start moving in the opposite direction
-    if (distance > range)
+    if (distance+0.5f > range)
         speed = -speed;
     GetTransform()->MoveAbsolute(speed*deltaTime, 0, 0);
 }
