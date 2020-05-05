@@ -66,6 +66,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> particleTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> round_particleTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cloverTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> rockTexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> brassTexture;
@@ -91,6 +92,7 @@ private:
 
 	//emitters
 	std::unique_ptr<Emitter> emitter;
+	std::unique_ptr<Emitter> gunfire_emitter;
 
 	//variables for shooting logic
 	float fireRate;

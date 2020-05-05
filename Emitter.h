@@ -62,6 +62,12 @@ public:
 
 	bool IsActive();
 	void SetActive(bool newState);
+
+	void Reset(); //Reset the dead counter so the emitter can loop again
+
+	void SetPosition(float x, float y, float z);
+	void SetStartVelocity(float x, float y, float z);
+	void SetAcceleration(float x, float y, float z);
 private:
 
 	// Emission properties
@@ -119,7 +125,6 @@ private:
 	void CopyParticlesToGPU(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* camera);
 	void CopyOneParticle(int index, Camera* camera);
 	DirectX::XMFLOAT3 CalcParticleVertexPosition(int particleIndex, int quadCornerIndex, Camera* camera);
-
 
 
 };

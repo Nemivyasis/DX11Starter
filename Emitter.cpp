@@ -3,26 +3,26 @@
 using namespace DirectX;
 
 Emitter::Emitter(
-	int maxParticles, 
-	int particlesPerSecond, 
-	float lifetime, 
-	float startSize, 
-	float endSize, 
-	DirectX::XMFLOAT4 startColor, 
-	DirectX::XMFLOAT4 endColor, 
-	DirectX::XMFLOAT3 startVelocity, 
+	int maxParticles,
+	int particlesPerSecond,
+	float lifetime,
+	float startSize,
+	float endSize,
+	DirectX::XMFLOAT4 startColor,
+	DirectX::XMFLOAT4 endColor,
+	DirectX::XMFLOAT3 startVelocity,
 	DirectX::XMFLOAT3 velocityRandomRange,
-	DirectX::XMFLOAT3 emitterPosition, 
-	DirectX::XMFLOAT3 positionRandomRange, 
-	DirectX::XMFLOAT4 rotationRandomRange, 
-	DirectX::XMFLOAT3 emitterAcceleration, 
-	Microsoft::WRL::ComPtr<ID3D11Device> device, 
-	SimpleVertexShader* vs, SimplePixelShader* ps, 
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texture, 
+	DirectX::XMFLOAT3 emitterPosition,
+	DirectX::XMFLOAT3 positionRandomRange,
+	DirectX::XMFLOAT4 rotationRandomRange,
+	DirectX::XMFLOAT3 emitterAcceleration,
+	Microsoft::WRL::ComPtr<ID3D11Device> device,
+	SimpleVertexShader* vs, SimplePixelShader* ps,
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texture,
 	bool isOneShot,
 	bool isActive,
-	bool isSpriteSheet, 
-	unsigned int spriteSheetWidth, 
+	bool isSpriteSheet,
+	unsigned int spriteSheetWidth,
 	unsigned int spriteSheetHeight
 )
 {
@@ -105,7 +105,7 @@ Emitter::Emitter(
 	}
 	D3D11_SUBRESOURCE_DATA indexData = {};
 	indexData.pSysMem = indices;
-	
+
 	D3D11_BUFFER_DESC ibDesc = {};
 	ibDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibDesc.CPUAccessFlags = 0;
@@ -152,7 +152,7 @@ void Emitter::Update(float dt)
 	}
 
 	// Add to the time if it is active
-	if(isActive)
+	if (isActive)
 		timeSinceEmit += dt;
 
 	// Enough time to emit?
@@ -173,7 +173,7 @@ void Emitter::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* 
 	UINT offset = 0;
 	context->IASetVertexBuffers(0, 1, vertexBuffer.GetAddressOf(), &stride, &offset);
 	context->IASetIndexBuffer(indexBuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
-	
+
 	//set the view and projection matrices and shaders
 	vs->SetMatrix4x4("view", camera->GetViewMatrix());
 	vs->SetMatrix4x4("projection", camera->GetProjectionMatrix());
@@ -208,6 +208,26 @@ void Emitter::SetActive(bool newState)
 	isActive = newState;
 }
 
+void Emitter::Reset()
+{
+	firstDeadIndex %= maxParticles;
+}
+
+void Emitter::SetPosition(float x, float y, float z)
+{
+	emitterPosition = XMFLOAT3(x, y, z);
+}
+
+void Emitter::SetStartVelocity(float x, float y, float z)
+{
+	startVelocity = XMFLOAT3(x, y, z);
+}
+
+void Emitter::SetAcceleration(float x, float y, float z)
+{
+	emitterAcceleration = XMFLOAT3(x, y, z);
+}
+
 void Emitter::UpdateSingleParticle(float dt, int index)
 {
 	//is it alive?
@@ -221,7 +241,9 @@ void Emitter::UpdateSingleParticle(float dt, int index)
 	//check for death
 	if (particles[index].Age >= lifetime) {
 		firstAliveIndex++;
+
 		firstAliveIndex %= maxParticles;
+
 		livingParticleCount--;
 		return;
 	}
@@ -263,6 +285,9 @@ void Emitter::SpawnParticle()
 	if (livingParticleCount == maxParticles)
 		return;
 
+	if (firstDeadIndex == maxParticles)
+		return;
+
 	//reset the first dead particle
 	particles[firstDeadIndex].Age = 0;
 	particles[firstDeadIndex].Size = startSize;
@@ -290,7 +315,11 @@ void Emitter::SpawnParticle()
 
 	//increment and warp
 	firstDeadIndex++;
-	firstDeadIndex %= maxParticles;
+
+	//if one-shot do not reset
+	if(!isOneShot){
+		firstDeadIndex %= maxParticles;
+	}
 
 	livingParticleCount++;
 }
@@ -340,7 +369,7 @@ void Emitter::CopyOneParticle(int index, Camera* camera)
 	localParticleVertices[i + 3].Color = particles[index].Color;
 
 	//if the particle uses a spritesheet, update UV coords with age too
-	if (isSpriteSheet) 
+	if (isSpriteSheet)
 	{
 		//what percent of lifetime has this particle existed
 		float agePercent = particles[index].Age / lifetime;

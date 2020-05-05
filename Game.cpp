@@ -88,6 +88,7 @@ void Game::Init()
 	//Make particle system
 	//getTexture
 	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/particle.jpg").c_str(), 0, particleTexture.GetAddressOf());
+	CreateWICTextureFromFile(device.Get(), context.Get(), GetFullPathTo_Wide(L"../../Assets/Textures/particle-round.png").c_str(), 0, round_particleTexture.GetAddressOf());
 
 	//Create depth state
 	D3D11_DEPTH_STENCIL_DESC dsDesc = {};
@@ -131,6 +132,28 @@ void Game::Init()
 		particleTexture,
 		false,
 		true));
+
+	gunfire_emitter = std::unique_ptr<Emitter>(new Emitter(
+		10,
+		100,
+		0.5,
+		0.015f,
+		0.01f,
+		XMFLOAT4(0.7f, 0.6f, 0.0f, 1), //start color
+		XMFLOAT4(1.0f, 0.3f, 0.0f, 0.2), //end color
+		XMFLOAT3(0, 0, 0.5f), //start vel
+		XMFLOAT3(0.1f, 0.1f, 0.1f), //velocity random range
+		XMFLOAT3(camera->GetTransform()->GetPosition().x, camera->GetTransform()->GetPosition().y, camera->GetTransform()->GetPosition().z), //pos
+		XMFLOAT3(0, 0, 0), //pos random range
+		XMFLOAT4(0,0,0,0), //rot random range
+		XMFLOAT3(0, -0.5f, 0), //acc
+		device,
+		particleVS.get(),
+		particlePS.get(),
+		round_particleTexture,
+		true,
+		true
+	));
 
 	collisionManeger = std::make_unique<CollisionManager>();
 
@@ -377,7 +400,11 @@ void Game::Update(float deltaTime, float totalTime)
 			camera.get()->GetTransform()->GetPosition(),
 			camera.get()->GetTransform()->GetRotation())
 		);
-		//collisionManeger->AddBullet(projectiles[projectiles.size() - 1]);
+		
+		//Spawn gunfire when clicked
+		gunfire_emitter->SetPosition(camera->GetTransform()->GetPosition().x, camera->GetTransform()->GetPosition().y, camera->GetTransform()->GetPosition().z); //get camera position
+		gunfire_emitter->SetStartVelocity(camera->GetViewMatrix()._13, camera->GetViewMatrix()._23, camera->GetViewMatrix()._33); //get front of the camera
+		gunfire_emitter->Reset();
 	}
 
 	lastShot += deltaTime;
@@ -430,6 +457,7 @@ void Game::Update(float deltaTime, float totalTime)
 	}
 	
 	emitter->Update(deltaTime);
+	gunfire_emitter->Update(deltaTime);
 }
 
 // --------------------------------------------------------
@@ -481,6 +509,7 @@ void Game::Draw(float deltaTime, float totalTime)
 
 	//draw all emitters here
 	emitter->Draw(context, camera.get());
+	gunfire_emitter->Draw(context, camera.get());
 
 	//reset
 	context->OMSetBlendState(0, 0, 0xffffffff);
