@@ -112,7 +112,7 @@ void Game::Init()
 
 	//Set up actual emitter
 	emitter = std::unique_ptr<Emitter>(new Emitter(
-		100,
+		111,
 		10,
 		6,
 		0.1f,
@@ -128,7 +128,9 @@ void Game::Init()
 		device,
 		particleVS.get(),
 		particlePS.get(),
-		particleTexture));
+		particleTexture,
+		false,
+		true));
 
 	collisionManeger = std::make_unique<CollisionManager>();
 

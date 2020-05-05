@@ -48,6 +48,8 @@ public:
 		SimpleVertexShader* vs,
 		SimplePixelShader* ps,
 		Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texture,
+		bool isOneShot = false,
+		bool isActive = true,
 		bool isSpriteSheet = false,
 		unsigned int spriteSheetWidth = 1,
 		unsigned int spriteSheetHeight = 1
@@ -58,12 +60,17 @@ public:
 	void Update(float dt);
 	void Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* camera);
 
+	bool IsActive();
+	void SetActive(bool newState);
 private:
 
 	// Emission properties
 	int particlesPerSecond;
 	float secondsPerParticle;
 	float timeSinceEmit;
+
+	bool isActive;
+	bool isOneShot;
 
 	bool isSpriteSheet;
 	int spriteSheetWidth;

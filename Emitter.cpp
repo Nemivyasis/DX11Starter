@@ -1,5 +1,5 @@
 #include "Emitter.h"
-
+#include <iostream>
 using namespace DirectX;
 
 Emitter::Emitter(
@@ -19,6 +19,8 @@ Emitter::Emitter(
 	Microsoft::WRL::ComPtr<ID3D11Device> device, 
 	SimpleVertexShader* vs, SimplePixelShader* ps, 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> texture, 
+	bool isOneShot,
+	bool isActive,
 	bool isSpriteSheet, 
 	unsigned int spriteSheetWidth, 
 	unsigned int spriteSheetHeight
@@ -45,6 +47,9 @@ Emitter::Emitter(
 	this->ps = ps;
 	this->texture = texture;
 
+	this->isActive = isActive;
+	this->isOneShot = isOneShot;
+
 	this->isSpriteSheet = isSpriteSheet;
 	this->spriteSheetWidth = max(spriteSheetWidth, 1);
 	this->spriteSheetHeight = max(spriteSheetHeight, 1);
@@ -58,6 +63,12 @@ Emitter::Emitter(
 
 	particles = new Particle[maxParticles];
 	ZeroMemory(particles, sizeof(Particle) * maxParticles);
+
+	//deactivate all particles 
+	for (int i = 0; i < maxParticles; i++)
+	{
+		particles[i].Age = lifetime;
+	}
 
 	DefaultUVs[0] = XMFLOAT2(0, 0);
 	DefaultUVs[1] = XMFLOAT2(1, 0);
@@ -140,8 +151,9 @@ void Emitter::Update(float dt)
 			UpdateSingleParticle(dt, i);
 	}
 
-	// Add to the time
-	timeSinceEmit += dt;
+	// Add to the time if it is active
+	if(isActive)
+		timeSinceEmit += dt;
 
 	// Enough time to emit?
 	while (timeSinceEmit > secondsPerParticle)
@@ -182,6 +194,18 @@ void Emitter::Draw(Microsoft::WRL::ComPtr<ID3D11DeviceContext> context, Camera* 
 		//Draw firstAlive -> end
 		context->DrawIndexed((maxParticles - firstAliveIndex) * 6, firstAliveIndex * 6, 0);
 	}
+}
+
+bool Emitter::IsActive()
+{
+	return isActive;
+}
+
+void Emitter::SetActive(bool newState)
+{
+	//if one shot and being set active, remember starting particle
+
+	isActive = newState;
 }
 
 void Emitter::UpdateSingleParticle(float dt, int index)
@@ -276,17 +300,17 @@ void Emitter::CopyParticlesToGPU(Microsoft::WRL::ComPtr<ID3D11DeviceContext> con
 	//Check to see if the buffer is contiguous or wrapping
 	if (firstAliveIndex < firstDeadIndex) // contiguous
 	{
-		for (int i = firstAliveIndex; i < firstDeadIndex; i++)
+		for (int i = firstAliveIndex + 1; i < firstDeadIndex; i++)
 			CopyOneParticle(i, camera);
 	}
 	else //wrapping
 	{
 		//Update the first half from 0 to the first dead particle
-		for (int i = 0; i < firstDeadIndex; i++)
+		for (int i = 1; i < firstDeadIndex; i++)
 			CopyOneParticle(i, camera);
 
 		//Copy second half from first alive to end
-		for (int i = firstAliveIndex; i < maxParticles; i++)
+		for (int i = firstAliveIndex + 1; i < maxParticles; i++)
 			CopyOneParticle(i, camera);
 	}
 
