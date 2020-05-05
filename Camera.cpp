@@ -3,7 +3,7 @@ using namespace DirectX;
 
 Camera::Camera(float aspectRatio)
 {
-	SetAllCustomOptions(XM_PIDIV4, .01f, 500, 1, 3, .005f);
+	SetAllCustomOptions(XM_PIDIV4, .01f, 500, 10, 30, .005f);
 	CreateTransform(XMFLOAT3(0, 0, -10), XMFLOAT3(0, 0, 0));
 	UpdateProjectionMatrix(aspectRatio);
 	UpdateViewMatrix();
