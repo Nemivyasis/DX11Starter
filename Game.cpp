@@ -381,7 +381,7 @@ void Game::Update(float deltaTime, float totalTime)
 			camera.get()->GetTransform()->GetPosition(),
 			camera.get()->GetTransform()->GetRotation())
 		);
-		
+
 		//Spawn gunfire when clicked
 		gunfire_emitter->SetPosition(camera->GetTransform()->GetPosition().x, camera->GetTransform()->GetPosition().y, camera->GetTransform()->GetPosition().z); //get camera position
 		gunfire_emitter->SetStartVelocity(camera->GetViewMatrix()._13, camera->GetViewMatrix()._23, camera->GetViewMatrix()._33); //get front of the camera
@@ -482,8 +482,12 @@ void Game::Update(float deltaTime, float totalTime)
 	else {
 		blurAmount = 0;
 	}
-	
-	emitter->Update(deltaTime);
+
+	gunfire_emitter->Update(deltaTime);
+	for (int i = 0; i < hitEmitters.size(); i++)
+	{
+		hitEmitters[i]->Update(deltaTime);
+	}
 }
 
 // --------------------------------------------------------
@@ -534,7 +538,11 @@ void Game::Draw(float deltaTime, float totalTime)
 	context->OMSetDepthStencilState(particleDepthState.Get(), 0);
 
 	//draw all emitters here
-	emitter->Draw(context, camera.get());
+	gunfire_emitter->Draw(context, camera.get());
+	for (int i = 0; i < hitEmitters.size(); i++)
+	{
+		hitEmitters[i]->Draw(context, camera.get());
+	}
 
 	//reset
 	context->OMSetBlendState(0, 0, 0xffffffff);

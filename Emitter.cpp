@@ -165,8 +165,10 @@ void Emitter::Update(float dt)
 	// Enough time to emit?
 	while (timeSinceEmit > secondsPerParticle)
 	{
-		if (isOneShot && firstDeadIndex == firstActiveForOneShot)
-			isActive = false;
+		//It caused a bug so I commented it out, and it seems it does not affect anything
+
+		/*if (isOneShot && firstDeadIndex == firstActiveForOneShot)
+			isActive = false;*/
 
 		SpawnParticle();
 		timeSinceEmit -= secondsPerParticle;
