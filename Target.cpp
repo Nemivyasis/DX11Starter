@@ -8,6 +8,8 @@ Target::Target(std::shared_ptr<Mesh> meshptr, std::shared_ptr<Material> mat, flo
     this->range = range;
     this->origin = GetTransform()->GetPosition();//Gets the origin of the target
     this->isDead = false;
+    this->delay = 0.25;
+    this->lastSwitch = 0;
 }
 
 //Gets the point value of the target
@@ -29,9 +31,12 @@ void Target::Update(float deltaTime) {
     float distance = Distance(origin, GetTransform()->GetPosition());
 
     //if the target has hit the end of the "track", start moving in the opposite direction
-    if (distance+0.5f > range)
+    if (distance > range && lastSwitch > delay) {
         speed = -speed;
+        lastSwitch = 0;
+    }
     GetTransform()->MoveAbsolute(speed*deltaTime, 0, 0);
+    lastSwitch += deltaTime;
 }
 
 //helper function to calculate distance between origin and current position

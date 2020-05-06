@@ -16,6 +16,8 @@ class Target :
 		float speed;
 		float range;//How far right/left of their origin the targets will move
 		XMFLOAT3 origin;
+		float delay;
+		float lastSwitch;
 
 		float Distance(XMFLOAT3 origin, XMFLOAT3 current);
 };
